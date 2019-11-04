@@ -18,3 +18,7 @@ Imports:
   spgrass6,
   rgrass7,
   rgdal
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

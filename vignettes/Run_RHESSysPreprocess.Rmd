@@ -1,24 +1,41 @@
-# run_RHESSysPreprocess
-# Will Burke 3/5/18
-# Last updated 4/20/19
+---
+title: "Run_RHESSysPreprocess"
+author: "William Burke"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Run_RHESSysPreprocess}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
 
-# Instructions
-# ------------
-# This is an example script showing how the RHESSysPreprocess.R function should be run.
-# 1) Install or source the RHESSysPreprocessing package
-# 2) Copy this script, and edit where indicated.
-# 3) Run the RHESSysPreprocess.R function at the bottom.
-# 4) The funciton will produce:
-#       - worldfile
-#       - flowtable
-#       - optionally: header
-#       (metadata output is being worked on currently)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
-# Load Package
-# ------------
-# Assuming you installed the RHESSysPreprocessing package, you will need to load it
+#Instructions
+------------
+This is an example script showing how the RHESSysPreprocess.R function should be run.
+1) Install or source the RHESSysPreprocessing package
+2) Copy this script, and edit where indicated.
+3) Run the RHESSysPreprocess.R function at the bottom.
+4) The funciton will produce:
+     - worldfile
+     - flowtable
+     - header (optional)
+
+Install and Load Package
+------------
+If you haven't already installed the package, do so now (shown here using devtools), and then load the package.
+```{r setup}
+library(devtools)
+devtools::install_github("RHESSys/RHESSysPreprocessing")
 library(RHESSysPreprocessing)
+```
 
+```{r}
 # Filepaths
 # ----------------
 # This script uses relative filepaths. This means that it will look folders and files relative to your current working directory.
@@ -108,3 +125,6 @@ RHESSysPreprocess(
   streams = streams,
   overwrite = overwrite,
   header = header)
+
+
+```
