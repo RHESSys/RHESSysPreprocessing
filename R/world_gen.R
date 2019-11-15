@@ -101,10 +101,10 @@ world_gen = function(template,
   rulevars = NULL
   if (asp_check) {
     asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
-    if (!is.numeric(asp_map)) { # if it's a map
+    if (suppressWarnings(any(is.na(as.numeric(asp_map))))) { # if it's a map
       asp_mapdata = map_df[asp_map]
-    } else if (is.numeric(asp_map)) { # if is a single number
-      asp_mapdata = asp_map
+    } else if (suppressWarnings(all(!is.na(as.numeric(asp_map))))) { # if is a single number
+      asp_mapdata = as.numeric(asp_map)
     }
     rulevars = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
 
