@@ -2,21 +2,24 @@
 # function that transforms flowtable into multiscale flow table
 # Will Burke 1/16/19
 
-multiscale_flow = function(CF1, map_ar_clean, cfmaps, asp_list){
+multiscale_flow = function(CF1, map_list, cfmaps, asp_list){
 
   # Inputs: exisiting flow table (list), map arrays, map list, aspatial/multiscale rule list
 
   # ----- Variable setup -----
-  asp_map = map_ar_clean[, ,cfmaps[cfmaps[,1] == "asp_rule",2]] # matrix of aspatial rules
+  asp_map = map_list[["asp_rule"]] # matrix of aspatial rules
+
   patch_ID = unlist(lapply(CF1, "[[",9)) # patch IDs from cf1
   numbers = unlist(lapply(CF1, "[[",1)) # flow list numbers
-  raw_patch_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "patch", 2]] # get patch matrix inside the function
+  raw_patch_data = map_list[[cfmaps[cfmaps[, 1] == "patch", 2]]] # get patch matrix inside the function
   rulevars = asp_list # get rules - state variable overrides
   CF2 = list() # empty list for new flow list
 
   # ----- iterate through (spatial) patches -----
-  for (p in raw_patch_data[!is.na(raw_patch_data)]) {
+  #for (p in raw_patch_data[!is.na(raw_patch_data)]) {
+   for (p in patch_ID) {
     id = unique(asp_map[which(raw_patch_data == p)]) # get unique rule ID for patch p
+    id = paste0("rule_",id)
 
     if (length(id) > 1) {stop(paste("multiple aspatial rules for patch",p))} # if multiple rules for a single patch
     asp_count = ncol(rulevars[[id]]$patch_level_vars[1,]) - 1 # get number of aspatial patches for current patch
@@ -60,11 +63,12 @@ multiscale_flow = function(CF1, map_ar_clean, cfmaps, asp_list){
       CF2[[length(CF2)]]$Slopes = new_slope
       CF2[[length(CF2)]]$Boarder = new_boarder
 
-      for(i in 1:length(CF2[[length(CF2)]])){
-        if(is.na(CF2[[length(CF2)]])[[i]]) {stop("shouldn't have NAs")}
-        if(length(CF2[[length(CF2)]][[i]])==0) {stop("shouldn't have numeric(0)'s")}
+      if (length(CF2) != 1 & unique(sapply(CF2, "[[", "PatchFamilyID")) != 1) {
+        for (i in 1:length(CF2[[length(CF2)]])) {
+          if(is.na(CF2[[length(CF2)]])[[i]]) {stop("shouldn't have NAs")}
+          if(length(CF2[[length(CF2)]][[i]])==0) {stop("shouldn't have numeric(0)'s")}
+        }
       }
-
 
     } # end aspatial patch loop
   } # end spatial patch loop

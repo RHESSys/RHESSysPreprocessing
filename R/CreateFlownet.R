@@ -2,9 +2,9 @@
 #'
 #' Creates the flow networkd table used by RHESSys
 #' @param flownet_name The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.
-#' @param readin readin indicates which maps to be used. If CreateFlowmet.R is run it's own, this should point to the template. Otherwise,
-#' if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R, Streams map, and other optional maps, still need to
-#' be specified.
+#' @param readin readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
+#' used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
+#' Streams map, and other optional maps, still need to be specified.
 #' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
 #' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
 #' ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
@@ -69,13 +69,13 @@ CreateFlownet = function(flownet_name,
   # Check for streams map, menu allows input of stream map
   if (is.null(streams) & (cfmaps[cfmaps[,1] == "streams",2] == "none" | is.na(cfmaps[cfmaps[,1] == "streams",2]))) {
     t = menu(c("Specify map","Abort function"),
-             title = "Missing stream map. Specify one now, or abort function and edit cf_maps file?")
+             title = "Missing stream map. Specify one now, or abort function and edit cf_maps file/readin input?")
     if (t == 2) {stop("Function aborted")}
     if (t == 1) {
       streams = readline("Stream map:")
     }
   }
-  # only add stream map to cfmaps if it's not there already
+  # add stream map to cfmaps if it's not there already
   if ((cfmaps[cfmaps[,1] == "streams",2] == "none" | is.na(cfmaps[cfmaps[,1] == "streams",2]))) {
     cfmaps[cfmaps[,1] == "streams",2] = streams
   }
@@ -88,32 +88,57 @@ CreateFlownet = function(flownet_name,
   if (!is.null(impervious)) {cfmaps[cfmaps[,1] == "impervious",2] = impervious}
   if (!is.null(roofs)) {cfmaps[cfmaps[,1] == "roofs",2] = roofs}
 
-  maps_in = unique(cfmaps[cfmaps[,2] != "none" & cfmaps[,1] != "cell_length",2])
+  # remove tif and tiff extensions for simplicity
+  if ( any(endsWith(cfmaps[,2],".tif") | endsWith(cfmaps[,2],".tiff")) ) {
+    cfmaps[,2] = gsub(".tif$","",cfmaps[,2])
+    cfmaps[,2] = gsub(".tiff$","",cfmaps[,2])
+  }
+
+  # check inpputs are maps or values
+  notamap = cfmaps[suppressWarnings( which(!is.na(as.numeric(cfmaps[,2])))),1]
+  maps_in = unique(cfmaps[cfmaps[,2] != "none" & !cfmaps[,1] %in% notamap,2])
 
   # ------------------------------ Use GIS_read to get maps ------------------------------
   readmap = GIS_read(maps_in, type, typepars, map_info = cfmaps)
+
+  # going to get rid of this
   map_ar_clean = as.array(readmap)
   dimnames(map_ar_clean)[[3]] = colnames(readmap@data)
 
-  raw_patch_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "patch", 2]]
-  raw_patch_elevation_data = map_ar_clean[, , unique(cfmaps[cfmaps[, 1] == "z", 2])]
-  raw_hill_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "hillslope", 2]]
-  raw_basin_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "basin", 2]]
-  raw_zone_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "zone", 2]]
-  raw_slope_data = map_ar_clean[, , unique(cfmaps[cfmaps[, 1] == "slope", 2])]
-  raw_stream_data = map_ar_clean[, , cfmaps[cfmaps[, 1] == "streams", 2]]
+  # this is better
+  map_list = lapply(readmap@data, matrix, nrow = readmap@grid@cells.dim[1], ncol = readmap@grid@cells.dim[2])
+
+  raw_patch_data = map_list[[cfmaps[cfmaps[, 1] == "patch", 2]]]
+  raw_hill_data = map_list[[cfmaps[cfmaps[, 1] == "hillslope", 2]]]
+  raw_basin_data = map_list[[cfmaps[cfmaps[, 1] == "basin", 2]]]
+  raw_zone_data = map_list[[cfmaps[cfmaps[, 1] == "zone", 2]]]
+  raw_stream_data = map_list[[cfmaps[cfmaps[, 1] == "streams", 2]]]
+
+  if ("slope" %in% notamap) {
+    raw_slope_data = raw_patch_data
+    raw_slope_data[!is.na(raw_slope_data)] = as.numeric(cfmaps[cfmaps[,1] == "slope",2])
+  } else {
+    raw_slope_data = map_list[[unique(cfmaps[cfmaps[, 1] == "slope", 2])]]
+  }
+  if ("z" %in% notamap) {
+    raw_patch_elevation_data = raw_patch_data
+    raw_patch_elevation_data[!is.na(raw_patch_elevation_data)] = as.numeric(cfmaps[cfmaps[,1] == "z",2])
+  } else {
+    raw_patch_elevation_data = map_list[[unique(cfmaps[cfmaps[, 1] == "z", 2])]]
+  }
+
   cell_length = readmap@grid@cellsize[1]
 
   # Roads
   raw_road_data = NULL
-  if (!is.null(roads)) {raw_road_data = map_ar_clean[, ,cfmaps[cfmaps[,1] == "roads",2]]}
+  if (!is.null(roads)) {raw_road_data =  map_list[[cfmaps[cfmaps[,1] == "roads",2]]]}
 
   # Roofs and impervious is not yet implemented - placeholders for now -----
   if (!is.null(roofs) | !is.null(impervious)) {print("Roofs and impervious are not yet working",quote = FALSE)}
   raw_roof_data = NULL
-  if (!is.null(roofs)) {raw_roof_data = map_ar_clean[, ,cfmaps[cfmaps[,1] == "roofs",2]]}
+  if (!is.null(roofs)) {raw_roof_data =  map_list[[cfmaps[cfmaps[,1] == "roofs",2]]]}
   raw_impervious_data = NULL
-  if (!is.null(impervious)) {raw_impervious_data = map_ar_clean[, ,cfmaps[cfmaps[,1] == "impervious",2]]}
+  if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
   # ----- SMOOTH FLAG STILL NEEDS TO BE LOOKED AT AGAIN -----
   smooth_flag = FALSE
@@ -138,7 +163,12 @@ CreateFlownet = function(flownet_name,
 
   # ------------------------------ Multiscale routing/aspatial patches ------------------------------
   if (!is.null(asp_list)) {
-    CF1 = multiscale_flow(CF1 = CF1, map_ar_clean = map_ar_clean, cfmaps = cfmaps, asp_list = asp_list)
+    if ("asp_rule" %in% notamap) {
+      map_list[["asp_rule"]] = raw_basin_data
+      map_list[["asp_rule"]][!is.na(map_list[["asp_rule"]])] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
+    }
+
+    CF1 = multiscale_flow(CF1 = CF1, map_list = map_list, cfmaps = cfmaps, asp_list = asp_list)
   }
 
   # ---------- Flownet list to flow table file ----------

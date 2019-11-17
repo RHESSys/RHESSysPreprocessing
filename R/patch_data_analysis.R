@@ -396,7 +396,7 @@ patch_data_analysis <- function(raw_patch_data,
 
   # -------------------- Single Patch World --------------------
   # If there's only 1 patch, build list manually and return
-  if (length(raw_patch_data) == 1) {
+  if (length(raw_patch_data) == 1 | length(flw_struct$Number) == 1) {
     lst[[1]]$Slopes = 0
     lst[[1]]$TotalG = flw_struct$Area
     return(lst)

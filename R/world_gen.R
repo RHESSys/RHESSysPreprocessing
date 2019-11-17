@@ -295,15 +295,20 @@ world_gen = function(template,
         if (asp_check) {
           patches = unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b, 5])
           asp_ct = sapply(rulevars, FUN = function(x) ncol(x[[1]]) - 1)
-          total_patches = sum(asp_ct[levels[levels[,5] == patches & levels[,4] == z & levels[,3] == h & levels[,2] == b, 7]])
+          if (length(patches) == 1 & length(asp_ct) == 1){
+            total_patches = length(patches) * asp_ct
+          } else {
+            total_patches = sum(asp_ct[levels[levels[,5] == patches & levels[,4] == z & levels[,3] == h & levels[,2] == b, 7]])
+          }
 
           writeChar(paste("\t\t\t",total_patches,"\t\t\t","num_patches\n",sep = ""),con = wcon,eos = NULL)
 
           # ----- Patches (spatial) -----
           for (p in patches) {
             ruleid = unique(levels[(levels[,5] == p & levels[,4] == z & levels[,3] == h & levels[,2] == b),7])
+            ruleid = paste0("rule_",ruleid)
             if (length(ruleid) != 1) {stop("something's wrong with the ruleid")}
-            asp_index = 1:(length(rulevars[[ruleid]]$patch_level_vars[1,]) - 1)
+            asp_index = 1:(length(rulevars[[(ruleid)]]$patch_level_vars[1,]) - 1)
 
             # ----- Patches (non-spatial) -----
             for (asp in asp_index) {
@@ -442,6 +447,19 @@ world_gen = function(template,
   cfmaps = rbind(map_info,
                  c("cell_length",cell_len),
                  c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
+
+  if (any(!map_info[,1] == "slope")) {
+    slope = NULL
+    for (i in 1:length(which(var_names == "slope"))) {
+      slope = c(slope, template_clean[[which(var_names == "slope")[i]]][3])
+    }
+    cfmaps = rbind(cfmaps, c("slope", mean(as.numeric(slope))))
+  }
+  if (asp_check) {
+    if (!"asp_rule" %in% cfmaps[,1]) {
+      cfmaps = rbind(cfmaps, c("asp_rule", mean(as.numeric(template_clean[[which(var_names == "asp_rule")]][3]))))
+    }
+  }
 
   world_gen_out = list(cfmaps,rulevars)
 
