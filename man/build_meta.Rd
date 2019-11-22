@@ -4,9 +4,20 @@
 \alias{build_meta}
 \title{build_meta}
 \usage{
-build_meta(name, world = NULL, flow = NULL, template, type, typepars,
-  cf_maps, streams = NULL, roads = NULL, impervious = NULL,
-  roofs = NULL, asp_rule = NULL)
+build_meta(
+  name,
+  world = NULL,
+  flow = NULL,
+  template,
+  type,
+  typepars,
+  cf_maps,
+  streams = NULL,
+  roads = NULL,
+  impervious = NULL,
+  roofs = NULL,
+  asp_rule = NULL
+)
 }
 \arguments{
 \item{name}{Name and path for metadata. ".meta" will be appended automatically.}

@@ -3,7 +3,6 @@
 \docType{package}
 \name{RHESSysPreprocessing}
 \alias{RHESSysPreprocessing}
-\alias{RHESSysPreprocessing-package}
 \title{RHESSysPreprocessing}
 \description{
 RHESSysPreprocessing is a package to generate input for RHESSys. Main function is RHESSysPreprocess.R.

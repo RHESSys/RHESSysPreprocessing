@@ -4,11 +4,25 @@
 \alias{RHESSysPreprocess}
 \title{RHESSysPreprocess}
 \usage{
-RHESSysPreprocess(template, name, type = "Raster", typepars,
-  streams = NULL, overwrite = FALSE, roads = NULL,
-  impervious = NULL, roofs = NULL, asprules = NULL, header = FALSE,
-  meta = FALSE, unique_strata_ID = TRUE, parallel = TRUE,
-  d4 = FALSE, make_stream = 4, wrapper = TRUE)
+RHESSysPreprocess(
+  template,
+  name,
+  type = "Raster",
+  typepars,
+  streams = NULL,
+  overwrite = FALSE,
+  roads = NULL,
+  impervious = NULL,
+  roofs = NULL,
+  asprules = NULL,
+  header = FALSE,
+  meta = FALSE,
+  unique_strata_ID = TRUE,
+  parallel = TRUE,
+  d4 = FALSE,
+  make_stream = 4,
+  wrapper = TRUE
+)
 }
 \arguments{
 \item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:

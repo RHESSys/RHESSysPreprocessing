@@ -4,9 +4,17 @@
 \alias{world_gen}
 \title{World Gen}
 \usage{
-world_gen(template, worldfile, type = "Raster", typepars,
-  overwrite = FALSE, header = FALSE, unique_strata_ID = TRUE,
-  asprules = NULL, wrapper = FALSE)
+world_gen(
+  template,
+  worldfile,
+  type = "Raster",
+  typepars,
+  overwrite = FALSE,
+  header = FALSE,
+  unique_strata_ID = TRUE,
+  asprules = NULL,
+  wrapper = FALSE
+)
 }
 \arguments{
 \item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:

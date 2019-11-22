@@ -4,8 +4,7 @@
 \alias{world_redefine}
 \title{World Redefine}
 \usage{
-world_redefine(template, name, type = "Raster", typepars,
-  overwrite = FALSE)
+world_redefine(template, name, type = "Raster", typepars, overwrite = FALSE)
 }
 \arguments{
 \item{template}{Template file used to generate redefine worldfile for RHESSys. Use "-9999" to retain

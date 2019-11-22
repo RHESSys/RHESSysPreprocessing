@@ -4,18 +4,30 @@
 \alias{CreateFlownet}
 \title{CreateFlownet}
 \usage{
-CreateFlownet(flownet_name, readin = NULL, type = "raster",
-  typepars = NULL, asp_list = NULL, streams = NULL,
-  overwrite = FALSE, roads = NULL, road_width = NULL,
-  impervious = NULL, roofs = NULL, wrapper = FALSE,
-  parallel = TRUE, make_stream = 4, d4 = FALSE)
+CreateFlownet(
+  flownet_name,
+  readin = NULL,
+  type = "raster",
+  typepars = NULL,
+  asp_list = NULL,
+  streams = NULL,
+  overwrite = FALSE,
+  roads = NULL,
+  road_width = NULL,
+  impervious = NULL,
+  roofs = NULL,
+  wrapper = FALSE,
+  parallel = TRUE,
+  make_stream = 4,
+  d4 = FALSE
+)
 }
 \arguments{
 \item{flownet_name}{The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.}
 
-\item{readin}{readin indicates which maps to be used. If CreateFlowmet.R is run it's own, this should point to the template. Otherwise,
-if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R, Streams map, and other optional maps, still need to
-be specified.}
+\item{readin}{readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
+used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
+Streams map, and other optional maps, still need to be specified.}
 
 \item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
 in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
