@@ -6,9 +6,10 @@
 \usage{
 update_world(
   worldfile,
-  out_file,
+  out_file = NULL,
   vars,
   values,
+  veg_parm_ID = NULL,
   level_names = NULL,
   level_IDs = NULL,
   overwrite = FALSE
@@ -21,13 +22,13 @@ update_world(
 
 \item{vars}{State variable(s) from the worldfile to be modified}
 
-\item{values}{Values to replace for `vars`, or coefficients to multiply by. N args must equal that of vars or be 1 (will be used for all vars). 
+\item{values}{Values to replace for `vars`, or coefficients to multiply by. N args must equal that of vars or be 1 (will be used for all vars).
 or can be a list of values where number of list elements = n vars}
 
-\item{level_names}{The level for which a given state variable will have it's value changed or replaced. Can be a single character string or vector 
+\item{level_names}{The level for which a given state variable will have it's value changed or replaced. Can be a single character string or vector
 of character strings. Valid arguments are: world, basin, hillslope, zone, patch, canopy_strata.}
 
-\item{level_IDs}{The IDs of the correstponding `level_names` for which a given state variable will have it's value changed or replaced. Set to NULL or "all" 
+\item{level_IDs}{The IDs of the correstponding `level_names` for which a given state variable will have it's value changed or replaced. Set to NULL or "all"
 to change a value across all of a given level (e.g. for all patches). This can be a vector same length as names, or a list, with IDs for each named level in names}
 
 \item{overwrite}{TRUE/FALSE if input worldfile should be overwritten}

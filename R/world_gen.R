@@ -361,7 +361,7 @@ world_gen = function(template,
                 # if template has 2 and asp rules only has 1 strata, missing values will use only the 1st strata of the template
                 if (length(stratum) == 1 & asp_strata_ct == 2 & s == 2) {s2 = 1} else {s2 = s}
 
-                asp_s_vars = which(!rulevars[[ruleid]]$strata_level_vars[[s]][,1] %in% var_names[var_index]) # get vars from aspatial not included in template
+                asp_s_vars = which(!rulevars[[ruleid]]$strata_level_vars[[asp]][,1] %in% var_names[var_index]) # get vars from aspatial not included in template
                 for (i in asp_s_vars) {
                   var = as.numeric(rulevars[[ruleid]]$strata_level_vars[[asp]][i, s + 1])
                   varname = rulevars[[ruleid]]$strata_level_vars[[asp]][i, 1]

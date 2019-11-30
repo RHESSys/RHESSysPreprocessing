@@ -89,9 +89,11 @@ CreateFlownet = function(flownet_name,
   if (!is.null(roofs)) {cfmaps[cfmaps[,1] == "roofs",2] = roofs}
 
   # remove tif and tiff extensions for simplicity
-  if ( any(endsWith(cfmaps[,2],".tif") | endsWith(cfmaps[,2],".tiff")) ) {
-    cfmaps[,2] = gsub(".tif$","",cfmaps[,2])
-    cfmaps[,2] = gsub(".tiff$","",cfmaps[,2])
+  if (all(!is.na(cfmaps[,2]))) {
+    if ( any(endsWith(cfmaps[,2],".tif") | endsWith(cfmaps[,2],".tiff")) ) {
+      cfmaps[,2] = gsub(".tif$","",cfmaps[,2])
+      cfmaps[,2] = gsub(".tiff$","",cfmaps[,2])
+    }
   }
 
   # check inpputs are maps or values
