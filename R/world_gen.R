@@ -121,37 +121,51 @@ world_gen = function(template,
   # If n_basestations is 0 -> do NOT include base_station_ID
   # If n_basestations is > 0 -> must include base_station_ID, even if doing redefine w/ -9999
   n_basestations_index = which(endsWith(var_names, "n_basestations"))
+  if (length(n_basestations_index) != 5) {stop("Could not find state variable 'n_basestations' at each level, variable must be present - check template")}
+
+  # check base_station to basestation since thats current in code
+  base_station_wrong = which(endsWith(var_names, "base_station_ID"))
+  if (length(base_station_wrong) > 0) {
+    #change var names everywhere
+    warning("State variable '<level>_base_station_ID' should be '<level>_basestation_ID' in RHESSys 7.1+")
+    fix = FALSE
+    if (fix) {
+      var_names[base_station_wrong] = gsub("base_station_ID", "basestation_ID", var_names[base_station_wrong])
+      template_clean[[base_station_wrong]][1] = gsub("base_station_ID", "basestation_ID", template_clean[[base_station_wrong]][1])
+    }
+  }
+  basestation_ID_index = which(endsWith(var_names, "base_station_ID") | endsWith(var_names, "basestation_ID"))
 
   # get n basestations , check that strata are the same
   n_base = sapply(template_clean[n_basestations_index],FUN = function(x) as.integer(unique(x[3:length(x)])))
   if (length(n_base[[5]]) > 1) {stop(noquote("Canopy Strata n_basestations are inconsistent"))}
-  n_base_nl = template_clean[n_basestations_index + 1] # get next line
-  id_bad = n_base == 0 & !sapply(n_base_nl,is.null) # t/t for if n_base is 0 and next line IS base_station_ID
-
-  id_bad[id_bad] = grepl("basestation_ID",unlist(lapply(n_base_nl[id_bad],"[[",1))) # get var names of next lines, update id_bad
-
-  id_need = n_base > 0 & !sapply(n_base_nl,is.null) # t/f for if n_base is >0 and next line IS NOT base_station_ID
-  id_need[id_need] = !grepl("basestation_ID",unlist(lapply(n_base_nl[id_need],"[[",1))) # get var names of next lines, update id_bad
-
-  if (any(id_need)) {
-    i_need = n_basestations_index[id_need]
-    stop(noquote(paste("n_basestations on template line(s)",paste(i_need,collapse = ", "),
-                       "is >0 & the following line is missing a base_station_ID.\n Either set n_basestations to 0 or add the base_station_ID.")))
-  }
-
-  if (any(id_bad)) {
-    # indices to remove
-    i_rm = n_basestations_index[id_bad]
-    # removes from list and names vector regardless of if ID is -9999 or not
-    template_clean = template_clean[-(i_rm + 1)]
-    var_names = var_names[-(i_rm + 1)]
-    # shift indices
-    level_index[level_index > min(i_rm + 1)] = level_index[level_index > min(i_rm + 1)] - 1
-    var_index = var_index[-which(var_index == i_rm + 1)]
-    var_index[var_index > min(i_rm + 1)] = var_index[var_index > min(i_rm + 1)] - 1
-    print(paste("n_basestations on template line(s)", paste(i_rm,collapse = ", "),
-                "is 0. The base_station_ID on the following line has been omitted from the worldfile."),quote = FALSE)
-  }
+  for (i in seq_along(n_basestations_index)) {
+    if (n_base[i] > 0) {
+      if (!any((n_basestations_index[i] + 1) %in% basestation_ID_index)) {
+        stop(noquote(paste("Missing basestation_ID on line", n_basestations_index[i] + 1,
+                           ", ID is required since previous n_basestations is > 0, please fix in template")))
+      }
+    } else if (n_base[i] == 0) {
+      if (any((n_basestations_index[i] + 1) %in% basestation_ID_index)) {
+        stop(noquote(paste("Basestation_ID is present on line", n_basestations_index[i] + 1,
+                           " while previous n_basestations is 0, either remove basestation_ID or modify n_basestaions to be > 0")))
+        fixthis = FALSE
+        if (fixthis) {
+          # indices to remove
+          i_rm = n_basestations_index[id_bad]
+          # removes from list and names vector regardless of if ID is -9999 or not
+          template_clean = template_clean[-(i_rm + 1)]
+          var_names = var_names[-(i_rm + 1)]
+          # shift indices
+          level_index[level_index > min(i_rm + 1)] = level_index[level_index > min(i_rm + 1)] - 1
+          var_index = var_index[-which(var_index == i_rm + 1)]
+          var_index[var_index > min(i_rm + 1)] = var_index[var_index > min(i_rm + 1)] - 1
+          print(paste("n_basestations on template line(s)", paste(i_rm,collapse = ", "),
+                      "is 0. The base_station_ID on the following line has been omitted from the worldfile."),quote = FALSE)
+        }
+      }
+    }
+  } # end loop through n_basestations
 
   # -------------------- Process Template + Maps --------------------
   # Build list based on operations called for by template
@@ -171,23 +185,42 @@ world_gen = function(template,
       strata = 1
     }
 
-    for (s in strata) {
-      # evalueate based on operator at 2nd element
-      if (template_clean[[i]][2] == "value") { #use value
-        if (suppressWarnings(all(is.na(as.numeric(template_clean[[i]][2 + s]))))) {
-          stop(noquote(paste("\"",template_clean[[i]][2 + s],"\" on template line ",i," is not a valid value.",sep = "")))
+    # some error check, line by line
+    if (template_clean[[i]][2] %in% c("value", "dvalue")) {
+      if (suppressWarnings(all(is.na(as.numeric(template_clean[[i]][3]))))) {
+        stop(noquote(paste0("\"",template_clean[[i]][3],"\" on template line ",i," is not a valid value.")))
+      }
+      if (length(strata) == 2) {
+        if (suppressWarnings(all(is.na(as.numeric(template_clean[[i]][4]))))) {
+          stop(noquote(paste0("\"",template_clean[[i]][4],"\" on template line ",i," is not a valid value.")))
         }
-        statevars[[i]][[s]] = as.double(template_clean[[i]][2 + s])
+      }
+    }
 
+    strata_values = 2
+    if (length(template_clean[[i]]) != 2 + length(strata) & template_clean[[i]][2] %in% c("value", "dvalue", "aver", "mode")) {
+      if (length(template_clean[[i]]) == 2) {
+        stop(noquote(paste0("Only 2 elements recognized ontemplate line ", i, ", expected format is <var name> <function> <value>")))
+      } else if (length(template_clean[[i]]) == 3 & length(strata) == 2) {
+        #warning("Using value '", template_clean[[i]][3], "' on template line ", i, " for both canopy strata")
+        strata_values = 1
+      }
+    }
+
+    s2 = 0
+    for (s in strata) {
+      if (s == 2 & strata_values == 1) {
+        s2 = 1
+      }
+      if (template_clean[[i]][2] == "value") { # value (numeric)
+        statevars[[i]][[s]] = as.double(template_clean[[i]][2 + s - s2])
       } else if (template_clean[[i]][2] == "dvalue") { #integer value
-        statevars[[i]][[s]] = as.integer(template_clean[[i]][2 + s])
-
+        statevars[[i]][[s]] = as.integer(template_clean[[i]][2 + s - s2])
       } else if (template_clean[[i]][2] == "aver") { #average
-        maptmp = as.vector(t(map_df[template_clean[[i]][2 + s]]))
+        maptmp = as.vector(t(map_df[template_clean[[i]][2 + s - s2]]))
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
-
       } else if (template_clean[[i]][2] == "mode") { #mode
-        maptmp = as.vector(t(map_df[template_clean[[i]][2 + s]]))
+        maptmp = as.vector(t(map_df[template_clean[[i]][2 + s - s2]]))
         statevars[[i]][[s]] = aggregate(
           maptmp,
           by = level_agg,
@@ -196,12 +229,10 @@ world_gen = function(template,
             ux[which.max(tabulate(match(x, ux)))]
           }
         )
-
       } else if (template_clean[[i]][2] == "eqn") { # only for horizons old version -- use normal mean in future
         maptmp = as.vector(t(map_df[template_clean[[i]][5]]))
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
         statevars[[i]][[s]][, "x"] = statevars[[i]][[s]][, "x"] * as.numeric(template_clean[[i]][3])
-
       } else if (template_clean[[i]][2] == "spavg") { #spherical average
         maptmp = as.vector(t(map_df[template_clean[[i]][3]]))
         rad = (maptmp * pi) / (180) #convert to radians
@@ -218,7 +249,6 @@ world_gen = function(template,
         statevars[[i]][[s]][, "x"] = aspect_deg
       } else if (template_clean[[i]][2] == "area") { #only for state var area
         statevars[[i]][[s]] = aggregate(cellarea, by = level_agg, FUN = "sum")
-
       } else {
         print(paste("Unexpected 2nd element on line", i))
       }
