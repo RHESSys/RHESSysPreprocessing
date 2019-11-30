@@ -478,7 +478,7 @@ world_gen = function(template,
                  c("cell_length",cell_len),
                  c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
 
-  if (any(!map_info[,1] == "slope")) {
+  if (!"slope" %in% map_info[,1]) {
     slope = NULL
     for (i in 1:length(which(var_names == "slope"))) {
       slope = c(slope, template_clean[[which(var_names == "slope")[i]]][3])
