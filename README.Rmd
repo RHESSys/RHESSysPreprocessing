@@ -2,6 +2,7 @@
 output: github_document
 ---
 
+<!-- README.md was generated from README.Rmd. Please edit that file -->
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -17,6 +18,7 @@ RHESSysPreprocessing is a set of functions to produce the required inputs for RH
 You can install RHESSysPreprocessing directly from R
 
 ```{r, eval = FALSE}
+# install.packages("devtools")
 devtools::install_github("RHESSys/RHESSysPreprocessing")
 ```
 
@@ -35,20 +37,20 @@ RHESSysPreprocessing contains a few main components:
 <!-- * world_gen.R: Creates a worldfile for use in RHESSys (replaces g2w)   -->
 <!-- * CreateFlownet.R: Creates a RHESSys flowtable (replaces cf)   -->
 
-|                     |                                                                       |
-|---------------------|-----------------------------------------------------------------------|
-| RHESSysPreprocess.R | An all-in-one function that runs both world_gen.R and CreateFlownet.R |
-| world_gen.R         | Creates a worldfile for use in RHESSys (replaces g2w)                 |
-| CreateFlownet.R     | Creates a RHESSys flowtable (replaces cf)                             |
+|                       |                                                                           |
+|-----------------------|---------------------------------------------------------------------------|
+| `RHESSysPreprocess()` | An all-in-one function that runs both `world_gen()` and `CreateFlownet()` |
+| `world_gen()`         | Creates a worldfile for use in RHESSys (replaces g2w)                     |
+| `CreateFlownet()`     | Creates a RHESSys flowtable (replaces cf)                                 |
 
 Other functions of note that can be used on their own:
 
-|                     |                                                                       |
-|---------------------|-----------------------------------------------------------------------|
-| template_read.R     | Reads a template file and produces an R list                          |
-| build_meta.R        | Builds a metadata file. <under construction                           |
-| convert_flowtable.R | Converts a non-parallelized (RHESSys < 7.0) flowtable to a parallelized flowtable |
-| read_in_flow.R      | Reads a flow table and creates an R list.                             |
+|                      |                                                                       |
+|----------------------|-----------------------------------------------------------------------|
+| `template_read()`    | Reads a template file and produces an R list                          |
+| `build_meta()`       | Builds a metadata file. <under construction                           |
+| `convert_flowtable()`| Converts a non-parallelized (RHESSys < 7.0) flowtable to a parallelized flowtable |
+| `read_in_flow()`     | Reads a flow table and creates an R list.                             |
 
 ## Compatibility
 Developed originally using R Version 3.4.0. May be incompatible with older R versions

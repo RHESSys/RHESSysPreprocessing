@@ -344,7 +344,7 @@ world_gen = function(template,
             for (asp in asp_index) {
               pnum = (p*100) + asp # adjust patch numbers here - adds two 0's, ie: patch 1 becomes patches 101, 102, etc.
               writeChar(paste("\t\t\t\t",pnum,"\t\t\t","patch_ID\n",sep = ""),con = wcon,eos = NULL)
-              writeChar(paste("\t\t\t\t",p,"\t\t\t","patch_family\n",sep = ""),con = wcon,eos = NULL)
+              writeChar(paste("\t\t\t\t",p,"\t\t\t","family_ID\n",sep = ""),con = wcon,eos = NULL)
 
               asp_p_vars = which(!rulevars[[ruleid]]$patch_level_vars[,1] %in% var_names[var_index]) # get vars from aspatial not included in template
 
