@@ -12,6 +12,7 @@
 #' @param out_file Destination file to write new worldfile
 #' @param overwrite TRUE/FALSE if input worldfile should be overwritten
 #' @author Will Burke
+#'
 #' @export
 
 update_world = function(worldfile, out_file = NULL, vars, values, veg_parm_ID = NULL, level_names = NULL, level_IDs = NULL, overwrite = FALSE) {
@@ -22,8 +23,10 @@ update_world = function(worldfile, out_file = NULL, vars, values, veg_parm_ID = 
   # - vdouble check all the list options work and check var lengths/numbers when needed
 
   # ---------- Check Aguments ----------
+  if (!exists(worldfile)) {stop(noquote("Input worldfile is required"))}
+  if (!file.exists(worldfile)) {stop(noquote(paste0("No file found at", worldfile)))}
   if (is.null(out_file) & !overwrite) {stop(noquote("No destination file set by 'out_file' and 'overwrite' is FALSE"))}
-  if ( file.exists(out_file) & overwrite == FALSE) {stop(noquote(paste0("File '",out_file,"' already exists and 'overwrite' argument is FALSE")))}
+  if (file.exists(out_file) & overwrite == FALSE) {stop(noquote(paste0("File '",out_file,"' already exists and 'overwrite' argument is FALSE")))}
   #if (length(vars) != length(values) & length(values) != 1 & !is.list(values)) {}
 
   # if (!is.list(values)) {
@@ -121,6 +124,5 @@ update_world = function(worldfile, out_file = NULL, vars, values, veg_parm_ID = 
   writeLines(text = read_world,out_file)
 
   print(noquote(paste("Successfully wrote updated worldfile to",out_file)))
-
 
 }
