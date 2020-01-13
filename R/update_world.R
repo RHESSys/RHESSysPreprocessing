@@ -23,7 +23,7 @@ update_world = function(worldfile, out_file = NULL, vars, values, veg_parm_ID = 
   # - vdouble check all the list options work and check var lengths/numbers when needed
 
   # ---------- Check Aguments ----------
-  if (!exists(worldfile)) {stop(noquote("Input worldfile is required"))}
+  # if (!exists(worldfile)) {stop(noquote("Input worldfile is required"))}
   if (!file.exists(worldfile)) {stop(noquote(paste0("No file found at", worldfile)))}
   if (is.null(out_file) & !overwrite) {stop(noquote("No destination file set by 'out_file' and 'overwrite' is FALSE"))}
   if (file.exists(out_file) & overwrite == FALSE) {stop(noquote(paste0("File '",out_file,"' already exists and 'overwrite' argument is FALSE")))}
@@ -43,8 +43,9 @@ update_world = function(worldfile, out_file = NULL, vars, values, veg_parm_ID = 
 
   # ---------- Parse Worldfile ----------
   # parsing the values as characters to retain the exact value/precision
-  read_world = readLines(worldfile)
-  world =  strsplit(trimws(read_world), "\t+")
+  read_world = readLines(worldfile, warn = FALSE)
+  read_world = read_world[nchar(read_world) > 0]
+  world =  strsplit(trimws(read_world), "\\s+")
   world = data.frame(matrix(unlist(world), nrow=length(world), byrow=T),stringsAsFactors = FALSE)
   names(world) = c("values","vars")
 
