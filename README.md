@@ -22,38 +22,38 @@ You can install RHESSysPreprocessing directly from R
 devtools::install_github("RHESSys/RHESSysPreprocessing")
 ```
 
-Alternatively, the package can be installed manually:
+<!-- Alternatively, the package can be installed manually: -->
 
-1.  Download or clone the RHESSysPreprocessing repository.
-2.  Open RHESSysPreprocessing.Rproj
-3.  Under the “Build” menu, select “Install and restart”.
-4.  Close the package (under “File” - “Close Project”).
-5.  Load the package via: `library(RHESSysPreprocessing)`
+<!-- 1. Download or clone the RHESSysPreprocessing repository. -->
+
+<!-- 1. Open RHESSysPreprocessing.Rproj -->
+
+<!-- 1. Under the "Build" menu, select "Install and restart". -->
+
+<!-- 1. Close the package (under "File" - "Close Project"). -->
+
+<!-- 1. Load the package via: `library(RHESSysPreprocessing)` -->
 
 ## Contents
 
 RHESSysPreprocessing contains a few main components:
 
-<!-- * RHESSysPreprocess.R: An all-in-one function that runs both world_gen.R and CreateFlownet.R   -->
-
-<!-- * world_gen.R: Creates a worldfile for use in RHESSys (replaces g2w)   -->
-
-<!-- * CreateFlownet.R: Creates a RHESSys flowtable (replaces cf)   -->
-
-`read_csv()` | | | |———————–|—————————————————————————| |
-`RHESSysPreprocess()` | An all-in-one function that runs both
-`world_gen()` and `CreateFlownet()` | | `world_gen()` | Creates a
-worldfile for use in RHESSys (replaces g2w) | | `CreateFlownet()` |
-Creates a RHESSys flowtable (replaces cf) |
+  - `RHESSysPreprocess()`: An all-in-one function that runs both
+    `world_gen()` and `CreateFlownet()`
+  - `world_gen()`: Creates a worldfile for use in RHESSys (replaces g2w)
+  - `CreateFlownet()`: Creates a RHESSys flowtable (replaces cf)
 
 Other functions of note that can be used on their own:
 
-|                       |                                                                                    |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| `template_read()`     | Reads a template file and produces an R list                                       |
-| `build_meta()`        | Builds a metadata file. \<under construction                                       |
-| `convert_flowtable()` | Converts a non-parallelized (RHESSys \< 7.0) flowtable to a parallelized flowtable |
-| `read_in_flow()`      | Reads a flow table and creates an R list.                                          |
+  - `template_read()`: Reads a template file and produces an R list
+  - `build_meta()`: Builds a metadata file. \<under construction
+  - `convert_flowtable()`: Converts a non-parallelized (RHESSys \< 7.0)
+    flowtable to a parallelized flowtable
+  - `read_in_flow()`: Reads a flow table and creates an R list
+  - `world_redefine()`: Small wrapper for `world_gen()` for creating
+    redefines
+  - `update_template()`: Read, modify, and/or output a new template file
+  - `world_redefine()`: Read, modify, and/or output a new worldfile
 
 ## Compatibility
 
