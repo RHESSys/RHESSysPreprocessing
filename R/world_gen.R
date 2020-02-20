@@ -178,13 +178,11 @@ world_gen = function(template,
     } else {
       level_agg = as.list(data.frame(levels[,i > level_index]))
     }
-
     if (i > level_index[6]) {
       strata = 1:template_clean[[level_index[6]]][3] # for stratum level of template
     } else{
       strata = 1
     }
-
     # some error check, line by line
     if (template_clean[[i]][2] %in% c("value", "dvalue")) {
       if (suppressWarnings(all(is.na(as.numeric(template_clean[[i]][3]))))) {
@@ -196,7 +194,6 @@ world_gen = function(template,
         }
       }
     }
-
     strata_values = 2
     if (length(template_clean[[i]]) != 2 + length(strata) & template_clean[[i]][2] %in% c("value", "dvalue", "aver", "mode")) {
       if (length(template_clean[[i]]) == 2) {
@@ -216,6 +213,8 @@ world_gen = function(template,
         statevars[[i]][[s]] = as.double(template_clean[[i]][2 + s - s2])
       } else if (template_clean[[i]][2] == "dvalue") { #integer value
         statevars[[i]][[s]] = as.integer(template_clean[[i]][2 + s - s2])
+      } else if (template_clean[[i]][2] == "char") { # character
+        statevars[[i]][[s]] = as.character(template_clean[[i]][2 + s - s2])
       } else if (template_clean[[i]][2] == "aver") { #average
         maptmp = as.vector(t(map_df[template_clean[[i]][2 + s - s2]]))
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
@@ -349,7 +348,9 @@ world_gen = function(template,
               asp_p_vars = which(!rulevars[[ruleid]]$patch_level_vars[,1] %in% var_names[var_index]) # get vars from aspatial not included in template
 
               for (i in asp_p_vars) {
-                var = as.numeric(rulevars[[ruleid]]$patch_level_vars[i,asp + 1])
+                # trying this without the asnumeric so I can add chars to worldfile
+                #var = as.numeric(rulevars[[ruleid]]$patch_level_vars[i,asp + 1])
+                var = rulevars[[ruleid]]$patch_level_vars[i,asp + 1]
                 varname = rulevars[[ruleid]]$patch_level_vars[i,1]
                 if (is.na(var)) {stop(paste(varname,"cannot be NA since a default isn't specified in the template, please set explicitly in your rules file."))}
                 writeChar(paste("\t\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
@@ -381,7 +382,7 @@ world_gen = function(template,
 
                 # Adds unique IDs for strataum intialized w/ same map as patches - appends 1 or 2 to the patch ID, ie patch 30 would have stratum 301 and 302
                 if (unique_strata_ID) {
-                  stratum_ID = unique(levels[levels[,5] == p & levels[,4] == z & levels[,3] == h & levels[,2] == b, 6]) * 10 + s
+                  stratum_ID = pnum * 10 + s
                 } else {
                   stratum_ID = unique(levels[levels[,5] == p & levels[,4] == z & levels[,3] == h & levels[,2] == b, 6])
                 }

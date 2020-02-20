@@ -37,7 +37,7 @@ template_read = function(template){
   maps_all = vector()
   maps_index = vector()
   for (i in var_index) {
-    if (suppressWarnings(all(is.na(as.numeric(template_clean[[i]][3]))))  & length(template_clean[[i]]) != 2) {
+    if (template_clean[[i]][2] != "char" && suppressWarnings(all(is.na(as.numeric(template_clean[[i]][3]))))  & length(template_clean[[i]]) != 2) {
       maps_all = c(maps_all, template_clean[[i]][3])
       maps_index = c(maps_index, i)}
     if (i > level_index[6] & suppressWarnings(all(is.na(as.numeric( template_clean[[i]][4]))))  & length(template_clean[[i]]) == 4) {

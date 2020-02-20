@@ -15,7 +15,6 @@ aspatial_patches = function(asprules,asp_mapdata) {
     lapply(unname(split(x, f)),as.numeric)
   }
 
-
   # ---------- Read rules file ----------
   con = file(asprules, open = "r") # commect to file
   readrules = readLines(con) # read file, default reads entire file, line by line
@@ -72,19 +71,26 @@ aspatial_patches = function(asprules,asp_mapdata) {
     if (!is.null(patch_var_list)) {
       for (var in 1:length(patch_var_list)) { # go through every patch level variable
 
-        if (patch_var_list[[var]][[2]] == "value" | patch_var_list[[var]][[2]] == "dvalue") { # check if second element is equation/modifier
+        if (patch_var_list[[var]][[2]] == "value" | patch_var_list[[var]][[2]] == "dvalue" | patch_var_list[[var]][[2]] == "char") { # check if second element is equation/modifier
           patch_vars = patch_var_list[[var]][3:length(patch_var_list[[var]])] # extract everything else
         } else {
           patch_vars = patch_var_list[[var]][2:length(patch_var_list[[var]])]
         }
         # ----- Parsing -----
-        num_index = which(suppressWarnings(!is.na(as.numeric(patch_vars)))) # positions of numbers
-        if (length(num_index) > subpatch_ct) {
+        #num_index = which(suppressWarnings(!is.na(as.numeric(patch_vars)))) # positions of numbers
+        var_index = which(!patch_vars %in% "|")
+
+        if (length(var_index) > subpatch_ct) {
           stop(paste(id_tag,"patch variable",var,"contains more values than (aspatial) patches"))
         }
-        if (length(num_index) == subpatch_ct | length(num_index) == 1) { # if it's the right number of values or 1 value
-          patch_df[var,2:length(patch_df[var,])] = as.numeric(patch_vars[num_index])
-        } else if (length(num_index) < subpatch_ct) { # messier if using | to denote where to fill in w base template
+        if (length(var_index) == subpatch_ct | length(var_index) == 1) { # if it's the right number of values or 1 value
+          if (patch_var_list[[var]][[2]] == "char") {
+            patch_df[var,2:length(patch_df[var,])] = as.character(patch_vars[var_index])
+          } else {
+            patch_df[var,2:length(patch_df[var,])] = as.numeric(patch_vars[var_index])
+          }
+        } else if (length(var_index) < subpatch_ct) { # messier if using | to denote where to fill in w base template
+          cat("Rules are messy, might not work")
           var_split = splitAt(patch_vars, which(patch_vars == "|"))
           patch_df[var,2] = as.numeric(var_split[[1]])
           for (i in 2:length(var_split)) {
@@ -101,6 +107,8 @@ aspatial_patches = function(asprules,asp_mapdata) {
 
     # get strata count(s)
     num_index = which(suppressWarnings(!is.na(as.numeric(strata_var_list[[1]])))) # positions of numbers
+    #var_index = which(!strata_var_list[[1]] %in% "|")
+
     if (length(num_index) == subpatch_ct) {
       strata_ct = as.integer(strata_var_list[[1]][num_index]) # strata counts for each subpatch
     } else if (length(num_index) == 1) {
@@ -154,54 +162,6 @@ aspatial_patches = function(asprules,asp_mapdata) {
           , y = strata_list)
         }
 
-        # else if ((length(num_index) == strata_ct | length(num_index) == 1) & !any(strata_vars == "|")) { # if its the same number of values as strata or just 1 value
-        #   strata_list = lapply(seq_along(strata_list), FUN = function(x,y) {y[[x]][var,2:length(y[[x]][var,])] = strata_vars[num_index] ; return(y[[x]])}, y = strata_list)
-        #
-        # } else if (length(num_index) < subpatch_ct * strata_ct) { # messier if using | to denote where to fill in w base template
-        #   var_split = splitAt(strata_vars, which(strata_vars == "|")) # split the values by |
-        #
-        #   if (length(var_split) != subpatch_ct) {stop(paste(id_tag,"strata variable",var,"doesn't have correct number of values or | separators for subpatches"))}
-        #
-        #   var_split = lapply(var_split, function(x) {
-        #     if (x[1] == "|" & length(x) == 1) {x = rep(NA, strata_ct)
-        #     } else if (x[1] == "|" & length(x) == 2) {x = rep(x[2], strata_ct)
-        #     } else if (x[1] == "|" & length(x) == 3) {x = x[2:3]
-        #     }
-        #     return(x)
-        #   })
-        #
-        #   strata_list = lapply(seq_along(strata_list), FUN = function(x,y) {y[[x]][var,2:length(y[[x]][var,])] = as.numeric(var_split[[x]]) ; return(y[[x]])}, y = strata_list)
-        #
-        # }
-
-        # for (s in 1:subpatch_ct) { # for each (sub)patch
-        #   # ----- Parsing -----
-        #   # if only given strata values for 1 subpatch, replicate to others, unless | are used to denote empty subpatches
-        #   # if only 1 value is given for 2 strata, the 1 value is replicated. NA can be input to instead use the template value
-        #   if (length(num_index) == subpatch_ct * strata_ct) { # if it's the right number of values
-        #     strata_list[[s]][var,2:length(strata_list[[s]][var,])] = as.numeric(strata_vars[num_index[c(s * 2 - 1, s * 2)]])
-        #   } else if ((length(num_index) == strata_ct | length(num_index) == 1) & !any(strata_vars == "|")) { # if its the same number of values as strata or just 1 value
-        #     strata_list[[s]][var,2:length(strata_list[[s]][var,])] = as.numeric(strata_vars[num_index])
-        #   } else if (length(num_index) < subpatch_ct * strata_ct) { # messier if using | to denote where to fill in w base template
-        #     var_split = splitAt(strata_vars, which(strata_vars == "|")) # split the values by |
-        #
-        #     if (length(var_split) != subpatch_ct) {stop(paste(id_tag,"strata variable",var,"doesn't have correct number of values for subpatches"))}
-        #
-        #     for (i in 1:length(var_split)) { # iterate through the split value list
-        #       if ((length(var_split[[i]]) == strata_ct | length(var_split[[i]]) == 1) & var_split[[i]][1] != "|") { # values == num strata, no | , use values - this is the first item in the split list
-        #         strata_list[[s]][var,2:(strata_ct + 1)] = as.numeric(var_split[[1]])
-        #       } else if (length(var_split[[i]]) == strata_ct + 1 & var_split[[i]][1] == "|") { # values = num strata +1, first is |
-        #         strata_list[[s]][var,2:(strata_ct + 1)] = as.numeric(var_split[[1]][2:(strata_ct + 1)])
-        #       }else if (length(var_split[[i]]) == 1 & var_split[[i]][1] == "|" ) { # if only "|" char, make both strata NA
-        #         strata_list[[s]][var,2:(strata_ct + 1)] = NA
-        #       } else if (length(var_split[[i]]) == 2 & var_split[[i]][1] == "|") { # if only 1 value, replicate for both strata
-        #         strata_list[[s]][var,2:(strata_ct + 1)] = var_split[[i]][2]
-        #       }
-        #     }
-        #     #strata_list[[s]][var,2:length(strata_list[[s]][var,])] = sapply(var_split[2:length(var_split)], "[[", 2)
-        #   }
-        #
-        # } # end subpatch loop
 
       }
     }
@@ -214,69 +174,6 @@ aspatial_patches = function(asprules,asp_mapdata) {
     names(asp_vars[[id_tag]]) = c("patch_level_vars", "strata_level_vars")
 
   } # end rule ID itr
-
-
-  # ----- old (working) loops to build aspatial output -----
-  # ---------- build rulevars based on rules and map data ----------
-  # map_ids = unique(asp_mapdata)[[1]] # get rule IDs from map/input
-  # map_id_tags = paste("rule_",map_ids,sep = "") # all map IDs concated w tags for referencing/reading in code
-  #
-  # asp_vars = as.list(rep(0,length(map_ids))) # empty list, to be output
-  # strata_index = as.list(rep(0,length(map_ids))) #
-  # names(asp_vars) = map_id_tags
-  # names(strata_index) = map_id_tags
-  #
-  # for (id_tag in map_id_tags) { # iterate through rules/IDs
-  #   subpatch_ct = as.numeric(rule_list[[id_tag]][[1]][[which(sapply(rule_list[[id_tag]][[1]],"[[",1) == "subpatch_count")]][2]) # count of patches within family/aspatial patches
-  #   asp_vars[[id_tag]] = as.list(rep(0,subpatch_ct)) # add list for each aspatial patch
-  #   statevar_len = c(length(rule_list[[id_tag]][[2]]),length(rule_list[[id_tag]][[3]])) # count of statevars for patch,strata
-  #   if (statevar_len[1] > 1) {patch_ind = 2:statevar_len[1]} else {patch_ind = NULL} # index of patches
-  #   if (statevar_len[2] > 1) {strata_ind = 2:statevar_len[2]} else {strata_ind = NULL} # index of strata
-  #   strata_ct = as.integer(rule_list[[id_tag]][[3]][[1]][2]) # get strata count
-  #
-  #   for (asp in 1:subpatch_ct) { # iterate through aspatial patches/subpatches
-  #     asp_vars[[id_tag]][[asp]] = as.list(rep(0,sum(statevar_len) - 2)) # add list w length = number of state vars
-  #
-  #     for (line in patch_ind) { # iteratre through lines for patch state vars
-  #       asp_sep = which(rule_list[[id_tag]][[2]][[line]] == "|")
-  #       asp_ind = c(asp_sep[1] - 1,asp_sep + 1)
-  #       asp_vars[[id_tag]][[asp]][[line - 1]] = as.list(rep(0,1)) # make empty list for each patch state var
-  #       if (rule_list[[id_tag]][[2]][[line]][2] == "value") { #use value
-  #         asp_vars[[id_tag]][[asp]][[line - 1]][[1]] = as.double(rule_list[[id_tag]][[2]][[line]][asp_ind[asp]])
-  #       } else if (rule_list[[id_tag]][[2]][[line]][2] == "dvalue") { #integer value
-  #         asp_vars[[id_tag]][[asp]][[line - 1]][[1]] = as.integer(rule_list[[id_tag]][[2]][[line]][asp_ind[asp]])
-  #       } else {print(paste("Unexpected 2nd element on line",line))}
-  #
-  #       names(asp_vars[[id_tag]][[asp]])[[line - 1]] = rule_list[[id_tag]][[2]][[line]][1]
-  #     }
-  #
-  #     for (line in strata_ind) { # iterate through lines for strata state vars
-  #       asp_sep = which(rule_list[[id_tag]][[3]][[line]] == "|")
-  #       asp_sep = c(2,asp_sep,length(rule_list[[id_tag]][[3]][[line]]) + 1)
-  #       asp_ind = matrix(nrow = subpatch_ct,ncol = strata_ct)
-  #       for (x in 1:subpatch_ct) { # sort out aspatial patch and statum index
-  #         if (length((asp_sep[x] + 1):(asp_sep[x + 1] - 1)) == strata_ct) {
-  #           asp_ind[x,] = (asp_sep[x] + 1):(asp_sep[x + 1] - 1)
-  #         } else if (length((asp_sep[x] + 1):(asp_sep[x + 1] - 1)) == 1) {
-  #           asp_ind[x,] = rep(asp_sep[x] + 1,strata_ct)
-  #         }
-  #       }
-  #
-  #       line_strata = max(patch_ind) + line - 2 # output line for strat vars
-  #       asp_vars[[id_tag]][[asp]][[line_strata]] = as.list(rep(0,strata_ct)) # make empty list with size of strata num
-  #       names(asp_vars[[id_tag]][[asp]])[[line_strata]] = rule_list[[id_tag]][[3]][[line]][1]
-  #
-  #       for (s in 1:strata_ct) {
-  #         if (rule_list[[id_tag]][[3]][[line]][2] == "value") { #use value
-  #           asp_vars[[id_tag]][[asp]][[line_strata]][[s]] = as.double(rule_list[[id_tag]][[3]][[line]][asp_ind[asp,s]])
-  #         } else if (rule_list[[id_tag]][[3]][[line]][2] == "dvalue") { #integer value
-  #           asp_vars[[id_tag]][[asp]][[line_strata]][[s]] = as.integer(rule_list[[id_tag]][[3]][[line]][asp_ind[asp,s]])
-  #         } else {print(paste("Unexpected 2nd element on line",line))}
-  #       }
-  #     } # end line strata itr
-  #   } # end asp itr
-  #   strata_index[[id_tag]] = min(strata_ind) # index to pass on of where strata starts
-  # } # end rule ID itr
 
 
   # ---------- Output ----------
