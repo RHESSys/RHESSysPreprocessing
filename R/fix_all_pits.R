@@ -42,11 +42,11 @@ fix_all_pits <- function(flw, flw_struct, parallel) {
   no_neighbors <- NULL # stores index of patches with no neighbors, corrected if parallel=TRUE
 
   print(paste("Filling", num_pits, "pits."), quote = F)
-  pb <- txtProgressBar(min = 0, max = num_pits, style = 3)
+  pb <- utils::txtProgressBar(min = 0, max = num_pits, style = 3)
 
   for (j in 1:num_pits) {
 
-    setTxtProgressBar(pb, j) #add progress
+    utils::setTxtProgressBar(pb, j) #add progress
     i <- pits[j]
 
     #if (sum(flw[[i]]$Gamma_i) == 0) { # if is redundant, but if the gammas are all 0, try to pit fill

@@ -6,6 +6,11 @@
 \usage{
 aspatial_patches(asprules, asp_mapdata)
 }
+\arguments{
+\item{asprules}{Input aspatial rules file}
+
+\item{asp_mapdata}{map data or value, indicating the rule IDs being used}
+}
 \description{
 Aspatial Patch Generation
 }

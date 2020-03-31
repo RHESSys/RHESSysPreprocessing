@@ -17,10 +17,14 @@
 #' Example parameters are included in an example script included in this package. See initGRASS help
 #' for more info on parameters.
 #' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
-#' @param unique_strata_ID Takes input map or value for stratum and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.
+#' @param unique_strata_ID Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.
+#' @param seq_patch_IDs TRUE/FALSE should patch map IDs be overwritten with sequential integers.
+#' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
 #' @param asprules The path and filename to the rules file.  Using this argument enables aspatial patches.
+#' @inheritParams RHESSysPreprocess
 #' @seealso \code{\link{raster}}
 #' @author Will Burke
+#' @importFrom stats aggregate
 #' @export
 
 world_gen = function(template,
@@ -31,6 +35,8 @@ world_gen = function(template,
                      header = FALSE,
                      unique_strata_ID = TRUE,
                      asprules = NULL,
+                     seq_patch_IDs = FALSE,
+                     output_patch_map = FALSE,
                      wrapper = FALSE) {
 
   # -------------------- Input & Error Checking --------------------
@@ -74,7 +80,7 @@ world_gen = function(template,
   }
 
   # -------------------- Read in Maps --------------------
-  read_maps = GIS_read(maps_in,type,typepars,map_info)
+  read_maps = GIS_read(maps_in,type,typepars,map_info, )
 
   # process map data
   if (length(read_maps@data[,1]) == 1){
@@ -149,20 +155,6 @@ world_gen = function(template,
       if (any((n_basestations_index[i] + 1) %in% basestation_ID_index)) {
         stop(noquote(paste("Basestation_ID is present on line", n_basestations_index[i] + 1,
                            " while previous n_basestations is 0, either remove basestation_ID or modify n_basestaions to be > 0")))
-        fixthis = FALSE
-        if (fixthis) {
-          # indices to remove
-          i_rm = n_basestations_index[id_bad]
-          # removes from list and names vector regardless of if ID is -9999 or not
-          template_clean = template_clean[-(i_rm + 1)]
-          var_names = var_names[-(i_rm + 1)]
-          # shift indices
-          level_index[level_index > min(i_rm + 1)] = level_index[level_index > min(i_rm + 1)] - 1
-          var_index = var_index[-which(var_index == i_rm + 1)]
-          var_index[var_index > min(i_rm + 1)] = var_index[var_index > min(i_rm + 1)] - 1
-          print(paste("n_basestations on template line(s)", paste(i_rm,collapse = ", "),
-                      "is 0. The base_station_ID on the following line has been omitted from the worldfile."),quote = FALSE)
-        }
       }
     }
   } # end loop through n_basestations

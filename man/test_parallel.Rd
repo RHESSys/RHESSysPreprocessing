@@ -10,7 +10,7 @@ test_parallel(flw)
 \item{flw}{List version of flow table, either produced via patch_data_analysis.R or read_in_flow2.R}
 }
 \description{
-Checks for flow across hillslopes, and returns a table indicating patches that flow across hillslopes, 
+Checks for flow across hillslopes, and returns a table indicating patches that flow across hillslopes,
 how many patches they flow to, and the combined gamma of that patch going across hillslopes
 }
 \author{

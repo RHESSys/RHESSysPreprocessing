@@ -23,8 +23,11 @@
 #' @param impervious Impervious map, an optional input for flowtable creation.
 #' @param roofs Roofs map, an optional input for flowtable creation.
 #' @param header TRUE/FALSE flag for the creation of a header file. Will have same name (and location) as "name" argument, but with ".hdr" suffix.
-#' @param asprules The path and filename to the rules file.  Using this argument enables aspatial patches.
 #' @param meta TRUE/FALSE flag for the creation of a metadata file. Still in dev.
+#' @param asprules The path and filename to the rules file.  Using this argument enables aspatial patches.
+#' @param unique_strata_ID Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.
+#' @param seq_patch_IDs TRUE/FALSE should patch map IDs be overwritten with sequential integers.
+#' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
 #' @param parallel TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 #' automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.
 #' @param d4 TRUE/FALSE flag to determine the logic used when finding neighbors in flow table creation. FALSE uses d8 routing, looking at all eight
@@ -32,7 +35,8 @@
 #' @param make_stream The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 #' Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 #' Default is 4.
-#' @seealso \code{\link{initGRASS}}, \code{\link{readRAST}}, \code{\link{raster}}
+#' @param wrapper internal argument to track if being run as all-in-one
+#' @seealso \code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
 #' @author Will Burke
 #' @export
 
@@ -46,10 +50,12 @@ RHESSysPreprocess = function(template,
                              roads = NULL,
                              impervious = NULL,
                              roofs = NULL,
-                             asprules = NULL,
                              header = FALSE,
                              meta = FALSE,
+                             asprules = NULL,
                              unique_strata_ID = TRUE,
+                             seq_patch_IDs = FALSE,
+                             output_patch_map = FALSE,
                              parallel = TRUE,
                              d4 = FALSE,
                              make_stream = 4,
@@ -77,7 +83,7 @@ RHESSysPreprocess = function(template,
   flownet_name = name_clean
 
   if (!dir.exists(dirname(name))) { # check if output dir exists, menu to create
-    t = menu(
+    t = utils::menu(
       c("Yes", "No [Exit]"),
       title = paste("Ouput directory path:",dirname(name),"is not valid. Create folder(s)?"))
     if (t == 1) {
@@ -100,7 +106,7 @@ RHESSysPreprocess = function(template,
   print("Begin world_gen.R",quote = FALSE)
 
   if (file.exists(worldfile) & overwrite == FALSE) { # check for worldfile overwrite
-    t = menu(c("Yes", "No [Exit]"), title = noquote(paste(
+    t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
       "Worldfile", worldfile, "already exists. Overwrite?"
     )))
     if (t == 2) {
@@ -124,7 +130,7 @@ RHESSysPreprocess = function(template,
   print("Begin CreateFlownet.R",quote = FALSE)
 
   if (file.exists(flownet_name) & overwrite == FALSE) { # check for flownet overwrite
-    t = menu(c("Yes", "No [Exit]"), title = noquote(paste(
+    t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
       "Flowtable", flownet_name, "already exists. Overwrite?"
     )))
     if (t == 2) {

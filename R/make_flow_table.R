@@ -21,7 +21,7 @@ make_flow_table<-function(flw,output_file,parallel){
     hill_unique = unique(elev_order[,3])
     hill_count = length(hill_unique)
 
-    pb = txtProgressBar(min=0,max=hill_count,style=3)
+    pb = utils::txtProgressBar(min=0,max=hill_count,style=3)
     ct=0
 
     sink(output_file)    #write to "output_file"
@@ -30,7 +30,7 @@ make_flow_table<-function(flw,output_file,parallel){
     for(i_hill in hill_unique){ #iterate through hillslopes - undordered
       ct=ct+1
       sink()
-      setTxtProgressBar(pb,ct)
+      utils::setTxtProgressBar(pb,ct)
       sink(output_file,append = TRUE)
 
       patches = elev_order[elev_order[,3]==i_hill,2]

@@ -13,6 +13,8 @@ values of exisintg worldfile. Generic strucutre is:
 <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
 by your chosen method of data input(GRASS or raster), set using the "type" arguement.}
 
+\item{name}{Name and path of redefine worldfile to be created.}
+
 \item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
 in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
 ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
@@ -25,8 +27,6 @@ Example parameters are included in an example script included in this package. S
 for more info on parameters.}
 
 \item{overwrite}{Overwrite existing redefine worldfile. FALSE is default and prompts a menu if worldfile already exists.}
-
-\item{worldfile}{Name and path of redefine worldfile to be created.}
 }
 \description{
 Generates redefine worldfiles for use in RHESSys specifically to modify exisitng worldfile values via

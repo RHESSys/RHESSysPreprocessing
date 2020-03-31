@@ -1,10 +1,31 @@
-# patch_data_analysis
-# Daniel Nash 2017
-# Edited by Will Burke
+#' patch_data_analysis
+#'
+#' This function is the main component of the larger create_flownet function.
+#' Function finds neighbors, calculates flow, accounts for pits, roads, streams etc.
+#' cell_length is size of cell in meters.
+#' DEPRICATED smooth_flag is a boolean that smoothes jagged patch borders
+#' @param raw_patch_data patch matrix
+#' @param raw_patch_elevation_data DEM matrix
+#' @param raw_hill_data hillslope matrix
+#' @param raw_basin_data basin matrix
+#' @param raw_zone_data zone matrix
+#' @param raw_slope_data slope matrix
+#' @param raw_stream_data stream map matrix
+#' @param raw_road_data road map matrix
+#' @param cell_length cell length in meters
+#' @param smooth_flag DEPRICATED
+#' @inheritParams RHESSysPreprocess
+#' @inheritParams CreateFlownet
+#' @author Daniel Nash
+#' @author Will Burke
+#' @importFrom utils txtProgressBar
+#' @importFrom utils setTxtProgressBar
 
-# This function is the main component of the larger create_flownet function. Function finds neighbors,
-# calculates flow, accounts of pits, roads, streams etc.
-# cell_length is size of cell in meters. smooth_flag is a boolean that smoothes jagged patch borders
+# @param road_width
+# @param smooth_flag
+# @param d4,
+# @param parallel,
+# @param make_stream
 
 patch_data_analysis <- function(raw_patch_data,
                                 raw_patch_elevation_data,

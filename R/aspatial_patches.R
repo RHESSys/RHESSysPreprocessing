@@ -1,5 +1,6 @@
 #' Aspatial Patch Generation
-#'
+#' @param asprules Input aspatial rules file
+#' @param asp_mapdata map data or value, indicating the rule IDs being used
 #' @author Will Burke
 
 aspatial_patches = function(asprules,asp_mapdata) {

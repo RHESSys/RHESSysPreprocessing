@@ -14,10 +14,12 @@ RHESSysPreprocess(
   roads = NULL,
   impervious = NULL,
   roofs = NULL,
-  asprules = NULL,
   header = FALSE,
   meta = FALSE,
+  asprules = NULL,
   unique_strata_ID = TRUE,
+  seq_patch_IDs = FALSE,
+  output_patch_map = FALSE,
   parallel = TRUE,
   d4 = FALSE,
   make_stream = 4,
@@ -54,11 +56,17 @@ for more info on parameters.}
 
 \item{roofs}{Roofs map, an optional input for flowtable creation.}
 
-\item{asprules}{The path and filename to the rules file.  Using this argument enables aspatial patches.}
-
 \item{header}{TRUE/FALSE flag for the creation of a header file. Will have same name (and location) as "name" argument, but with ".hdr" suffix.}
 
 \item{meta}{TRUE/FALSE flag for the creation of a metadata file. Still in dev.}
+
+\item{asprules}{The path and filename to the rules file.  Using this argument enables aspatial patches.}
+
+\item{unique_strata_ID}{Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.}
+
+\item{seq_patch_IDs}{TRUE/FALSE should patch map IDs be overwritten with sequential integers.}
+
+\item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
 
 \item{parallel}{TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.}
@@ -69,13 +77,15 @@ neighboring cells. TRUE uses d4 routing, looking at only cardinal directions, no
 \item{make_stream}{The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 Default is 4.}
+
+\item{wrapper}{internal argument to track if being run as all-in-one}
 }
 \description{
 Preforms RHESSys Preprocessing, comprised of two main steps: generating a world file, and generating a flow table.
 World file is generated via world_gen.R, and flow table is generated via CreateFlownet.R.
 }
 \seealso{
-\code{\link{initGRASS}}, \code{\link{readRAST}}, \code{\link{raster}}
+\code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
 }
 \author{
 Will Burke

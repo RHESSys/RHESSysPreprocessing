@@ -16,10 +16,10 @@ CreateFlownet(
   road_width = NULL,
   impervious = NULL,
   roofs = NULL,
-  wrapper = FALSE,
   parallel = TRUE,
   make_stream = 4,
-  d4 = FALSE
+  d4 = FALSE,
+  wrapper = FALSE
 )
 }
 \arguments{
@@ -40,11 +40,15 @@ For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS param
 Example parameters are included in an example script included in this package. See initGRASS help
 for more info on parameters.}
 
+\item{asp_list}{List of aspatial structure and inputs. Used internally}
+
 \item{streams}{Streams map to be used in building the flowtable.}
 
 \item{overwrite}{Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.}
 
 \item{roads}{Roads map, an optional input for flowtable creation.}
+
+\item{road_width}{>0, defaults to 1.}
 
 \item{impervious}{Impervious map, an optional input for flowtable creation.}
 
@@ -59,6 +63,8 @@ Setting to TRUE will include patches at any distance. This is needed for hillslo
 
 \item{d4}{TRUE/FALSE flag to determine the logic used when finding neighbors in flow table creation. FALSE uses d8 routing, looking at all eight
 neighboring cells. TRUE uses d4 routing, looking at only cardinal directions, not diagonals.}
+
+\item{wrapper}{internal argument to track if being run as all-in-one}
 }
 \description{
 Creates the flow networkd table used by RHESSys

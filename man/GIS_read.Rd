@@ -4,7 +4,14 @@
 \alias{GIS_read}
 \title{GIS_read}
 \usage{
-GIS_read(maps_in, type, typepars, map_info)
+GIS_read(
+  maps_in,
+  type,
+  typepars,
+  map_info = NULL,
+  seq_patch_IDs = FALSE,
+  output_patch_map = FALSE
+)
 }
 \arguments{
 \item{maps_in}{Character vector of maps to be read in by the chosen method.}
@@ -15,6 +22,12 @@ GIS_read(maps_in, type, typepars, map_info)
 vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
 Example parameters are included in an example script included in this package. See initGRASS help
 for more info on parameters. For raster type, typepars is a file path to a folder containing the rasters indicated in read_in.}
+
+\item{map_info}{Two column matrix of map types and names, output of `read_template()``}
+
+\item{seq_patch_IDs}{TRUE/FALSE should patch map IDs be overwritten with sequential integers.}
+
+\item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
 }
 \value{
 Returns a LargeSpatialGridDataFrame containing all the maps indicated in read_in

@@ -25,6 +25,8 @@ update_world(
 \item{values}{Values to replace for `vars`, or coefficients to multiply by. N args must equal that of vars or be 1 (will be used for all vars).
 or can be a list of values where number of list elements = n vars}
 
+\item{veg_parm_ID}{Veg parm IDs to subset}
+
 \item{level_names}{The level for which a given state variable will have it's value changed or replaced. Can be a single character string or vector
 of character strings. Valid arguments are: world, basin, hillslope, zone, patch, canopy_strata.}
 

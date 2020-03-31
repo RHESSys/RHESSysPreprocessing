@@ -20,9 +20,29 @@ spatial_input_gen(
 )
 }
 \arguments{
-\item{basin}{The area defining your basin/watershed of interest. Assumes it's a raster}
+\item{name}{Name of your project}
 
-\item{Name}{Name of your project}
+\item{DEM}{name of DEM map}
+
+\item{GRASS_path}{Path to grass isntall location}
+
+\item{threshold}{threshold for upstream patches to make a stream}
+
+\item{basin}{optional input basin map}
+
+\item{patch}{optional method to define patches}
+
+\item{define_watershed}{Optional method to define watershed outline}
+
+\item{easting}{easting}
+
+\item{northing}{=northing}
+
+\item{gisDbase}{gisDbase location}
+
+\item{location}{GRASS GIS location}
+
+\item{mapset}{GRASS GIS mapset}
 }
 \description{
 Generate the spatial inputs for RHESSys and RHESSysPreprocessing

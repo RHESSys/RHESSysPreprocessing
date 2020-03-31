@@ -14,9 +14,11 @@
 #' For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
 #' Example parameters are included in an example script included in this package. See initGRASS help
 #' for more info on parameters.
+#' @param asp_list List of aspatial structure and inputs. Used internally
 #' @param streams Streams map to be used in building the flowtable.
 #' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
 #' @param roads Roads map, an optional input for flowtable creation.
+#' @param road_width >0, defaults to 1.
 #' @param impervious Impervious map, an optional input for flowtable creation.
 #' @param roofs Roofs map, an optional input for flowtable creation.
 #' @param parallel TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
@@ -26,6 +28,7 @@
 #' @param make_stream The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 #' Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 #'  Default is 4.
+#' @param wrapper internal argument to track if being run as all-in-one
 #' @author Will Burke
 #' @export
 
@@ -41,10 +44,10 @@ CreateFlownet = function(flownet_name,
                          road_width = NULL,
                          impervious = NULL,
                          roofs = NULL,
-                         wrapper = FALSE,
                          parallel = TRUE,
                          make_stream = 4,
-                         d4 = FALSE){
+                         d4 = FALSE,
+                         wrapper = FALSE){
 
   # ------------------------------ Read and check inputs ------------------------------
   cfbasename = basename(flownet_name) # Coerce .flow extension
@@ -59,7 +62,7 @@ CreateFlownet = function(flownet_name,
   if (file.exists(flownet_name) & overwrite == FALSE) {stop(noquote(paste("Flowtable",flownet_name,"already exists.")))}
 
   if (!wrapper & is.character(readin)) { #if run outside of rhessyspreprocess.R, and if readin is character. readin is the template (and path)
-    template_list = template_read(template)
+    template_list = template_read(readin)
     map_info = template_list[[5]]
     cfmaps = rbind(map_info,c("cell_length","none"), c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
   } else if (wrapper | (!wrapper & is.matrix(readin))) { # map info is passsed directly from world gen - either in wrapper or outside of wrapper and readin is matrix
@@ -68,7 +71,7 @@ CreateFlownet = function(flownet_name,
 
   # Check for streams map, menu allows input of stream map
   if (is.null(streams) & (cfmaps[cfmaps[,1] == "streams",2] == "none" | is.na(cfmaps[cfmaps[,1] == "streams",2]))) {
-    t = menu(c("Specify map","Abort function"),
+    t = utils::menu(c("Specify map","Abort function"),
              title = "Missing stream map. Specify one now, or abort function and edit cf_maps file/readin input?")
     if (t == 2) {stop("Function aborted")}
     if (t == 1) {

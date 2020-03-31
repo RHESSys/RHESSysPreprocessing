@@ -8,8 +8,6 @@ template_read(template)
 }
 \arguments{
 \item{template}{template name and path to be read in}
-
-\item{asp_check}{flag for if aspatial patches are being used/if the asp_rule map needs to be identified.}
 }
 \value{
 Returns a list containing (in order): template in list form, variable name vector, index of levels,

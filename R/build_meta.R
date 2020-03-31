@@ -2,6 +2,17 @@
 #'
 #' Create documentation/metadata for RHESSys Preprocessing. 2/27/18
 #' @param name Name and path for metadata. ".meta" will be appended automatically.
+#' @param world worldfile
+#' @param flow flowtable
+#' @param template template
+#' @param type type of spatial input
+#' @param typepars params for spatial input
+#' @param cf_maps additional maps input for flownet creation
+#' @param streams stream map
+#' @param roads roads map
+#' @param impervious impervious map
+#' @param roofs roofs map
+#' @param asp_rule aspatial rule file
 #' @return Writes metadata with name and path indicated in name
 #' @author Will Burke
 #'
@@ -109,7 +120,7 @@ build_meta = function(name,
       }
   }
 
-  write.table(meta_out,file = table_name,row.names = FALSE)
+  utils::write.table(meta_out,file = table_name,row.names = FALSE)
 
   print(paste("Created metadata:",table_name),quote=FALSE)
 

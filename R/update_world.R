@@ -9,6 +9,7 @@
 #' of character strings. Valid arguments are: world, basin, hillslope, zone, patch, canopy_strata.
 #' @param level_IDs The IDs of the correstponding `level_names` for which a given state variable will have it's value changed or replaced. Set to NULL or "all"
 #' to change a value across all of a given level (e.g. for all patches). This can be a vector same length as names, or a list, with IDs for each named level in names
+#' @param veg_parm_ID Veg parm IDs to subset
 #' @param out_file Destination file to write new worldfile
 #' @param overwrite TRUE/FALSE if input worldfile should be overwritten
 #' @author Will Burke

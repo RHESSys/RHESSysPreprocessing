@@ -2,7 +2,6 @@
 #'
 #' Reads in a RHESSys template file, produces a clean list, variable name vector, indices of levels and variables
 #' @param template template name and path to be read in
-#' @param asp_check flag for if aspatial patches are being used/if the asp_rule map needs to be identified.
 #' @return Returns a list containing (in order): template in list form, variable name vector, index of levels,
 #' index of variables, full table of maps and associated variables
 #' @author Will Burke

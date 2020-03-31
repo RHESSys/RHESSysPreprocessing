@@ -21,6 +21,28 @@ build_meta(
 }
 \arguments{
 \item{name}{Name and path for metadata. ".meta" will be appended automatically.}
+
+\item{world}{worldfile}
+
+\item{flow}{flowtable}
+
+\item{template}{template}
+
+\item{type}{type of spatial input}
+
+\item{typepars}{params for spatial input}
+
+\item{cf_maps}{additional maps input for flownet creation}
+
+\item{streams}{stream map}
+
+\item{roads}{roads map}
+
+\item{impervious}{impervious map}
+
+\item{roofs}{roofs map}
+
+\item{asp_rule}{aspatial rule file}
 }
 \value{
 Writes metadata with name and path indicated in name

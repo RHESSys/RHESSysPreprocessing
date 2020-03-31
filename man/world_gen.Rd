@@ -13,6 +13,8 @@ world_gen(
   header = FALSE,
   unique_strata_ID = TRUE,
   asprules = NULL,
+  seq_patch_IDs = FALSE,
+  output_patch_map = FALSE,
   wrapper = FALSE
 )
 }
@@ -37,9 +39,17 @@ for more info on parameters.}
 
 \item{overwrite}{Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.}
 
-\item{unique_strata_ID}{Takes input map or value for stratum and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.}
+\item{header}{TRUE/FALSE flag for the creation of a header file. Will have same name (and location) as "name" argument, but with ".hdr" suffix.}
+
+\item{unique_strata_ID}{Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.}
 
 \item{asprules}{The path and filename to the rules file.  Using this argument enables aspatial patches.}
+
+\item{seq_patch_IDs}{TRUE/FALSE should patch map IDs be overwritten with sequential integers.}
+
+\item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
+
+\item{wrapper}{internal argument to track if being run as all-in-one}
 }
 \description{
 Generates world files for use in RHESSys based on input template and maps,

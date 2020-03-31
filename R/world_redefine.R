@@ -8,7 +8,7 @@
 #' <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 #' <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
 #' by your chosen method of data input(GRASS or raster), set using the "type" arguement.
-#' @param worldfile Name and path of redefine worldfile to be created.
+#' @param name Name and path of redefine worldfile to be created.
 #' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
 #' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
 #' ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of

@@ -7,11 +7,15 @@
 #' vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
 #' Example parameters are included in an example script included in this package. See initGRASS help
 #' for more info on parameters. For raster type, typepars is a file path to a folder containing the rasters indicated in read_in.
+#' @param map_info Two column matrix of map types and names, output of `read_template()``
+#' @param seq_patch_IDs TRUE/FALSE should patch map IDs be overwritten with sequential integers.
+#' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
 #' @return Returns a LargeSpatialGridDataFrame containing all the maps indicated in read_in
 #' @author Will Burke
 #' @export
+#' @importFrom methods as
 
-GIS_read = function(maps_in,type,typepars,map_info) {
+GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FALSE, output_patch_map = FALSE) {
 
   options(scipen = 999) # no scientific notation
 
@@ -25,7 +29,7 @@ GIS_read = function(maps_in,type,typepars,map_info) {
   }
 
   # ---------- Read in spatial data ----------
-  print("Reading in maps",quote = FALSE)
+  cat("Reading in maps\n")
   # GRASS 6.4.4 ----------
   if (type == "GRASS6") {
     spgrass6::initGRASS( # Initialize GRASS environment
@@ -134,14 +138,14 @@ GIS_read = function(maps_in,type,typepars,map_info) {
       p[i] = raster::projection(read_stack[[i]])
       d[i] = attr(rgdal::GDALinfo(file_paths[i],silent = TRUE),which = "driver")
     }
-    if (length(unique(p)) > 1 & exists("map_info")) { # if map_info is present, coerce world level projection, output text for overwritten projections
+    if (length(unique(p)) > 1 & !is.null("map_info")) { # if map_info is present, coerce world level projection, output text for overwritten projections
       for (i in which(p != raster::projection(read_stack[[map_info[map_info[,1] == "world",2]]]))) {
         raster::projection(read_stack[[i]]) = raster::projection(read_stack[[map_info[map_info[,1] == "world",2]]])
         print(paste("Projection arguments for",names(read_stack[[i]]),"coerced to world level projection:",
                     raster::projection(read_stack[[map_info[map_info[,1] == "world",2]]])),quote = FALSE)
       }
     }
-    if (length(unique(p)) > 1 & !exists("map_info")) {
+    if (length(unique(p)) > 1 & is.null("map_info")) {
       print(paste("Differing projection arguments:",unique(p),"Potential conflicts."),quote = FALSE)
     }
 
@@ -152,7 +156,7 @@ GIS_read = function(maps_in,type,typepars,map_info) {
     # Handling grass ascii 0's - get rid of 0's for background/NA -----
     # Ideeally this should be handled when reading in files, but I can't find where the default for nodata is set,
     # and strangely this is an ascii specific issue
-    if (any(d == "AAIGrid") | any(d == "GRASSASCIIGrid")) {
+    if ((any(d == "AAIGrid") | any(d == "GRASSASCIIGrid")) & !is.null("map_info")) {
       # raster::values(read_stack)[apply(raster::values(read_stack)==0,FUN = all,MARGIN = 1)] = NA
       # print(paste("Background 0's converted to NA's"))
 
@@ -161,23 +165,42 @@ GIS_read = function(maps_in,type,typepars,map_info) {
     }
 
     # Mask all maps by world level map -----
-    if (exists("map_info")) { # if being run inside RHESSysPreprocess.R will always have map_info - just makes funciton more versitile
+    if (!is.null("map_info")) { # if being run inside RHESSysPreprocess.R will always have map_info - just makes funciton more versitile
       read_stack = raster::mask(read_stack,read_stack[[map_info[map_info[,1] == "world",2][[1]]]])# mask by map used for world level
     }
 
-    read_stack = raster::trim(read_stack) #get rid of extra background
+    if (read_stack@data@nlayers == 1) {
+      read_stack = raster::trim(read_stack[[1]]) #get rid of extra background
+    } else {
+      read_stack = raster::trim(read_stack) #get rid of extra background
+    }
 
     # Check for missing data (within world map mask) - no fix, just an error since I think this will break things if left unchecked
-    if (exists("map_info") & sum(is.na(raster::values(read_stack)[!is.na(raster::values(read_stack[[map_info[map_info[,1] == "world",2][[1]]]])),
+    if (!is.null("map_info") & sum(is.na(raster::values(read_stack)[!is.na(raster::values(read_stack[[map_info[map_info[,1] == "world",2][[1]]]])),
                                                                  !colnames(raster::values(read_stack)) %in% map_info[map_info[,1] == "streams",2]])) > 0) {
       # Add in future? - which maps are missing data?
       stop("Missing data within bounds of world level map. Check you input maps.")
     }
 
     # Convert maps to SpatialGridDataFrame since world_gen.R expects that format
-    readmap = as(read_stack,"SpatialGridDataFrame")
+    readmap = methods::as(read_stack,"SpatialGridDataFrame")
+
+    if (seq_patch_IDs & !is.null("map_info")) {
+      cat("Overwritting patch IDs to be sequential\n")
+      pmap = map_info[map_info[,1] == "patch",2]
+      readmap@data[[pmap]][!is.na(readmap@data[[pmap]])] = seq_along(readmap@data[[pmap]][!is.na(readmap@data[[pmap]])])
+
+      if (output_patch_map) {
+        pmap_fname = paste0(sub("\\..{3,4}$", "", pmap),"_seqID.tif")
+        cat("Writing patch map with new IDs to file:", pmap_fname,"\n")
+        raster::writeRaster(x = as(readmap[pmap], "RasterLayer"), filename = file.path(typepars,pmap_fname))
+      }
+    }
 
   } # end raster spatial data
+
+
+  cat("Finished reading in maps\n")
 
   return(readmap)
 

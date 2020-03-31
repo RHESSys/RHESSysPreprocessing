@@ -9,7 +9,7 @@ clump_bycategory(basemap, directions = 8)
 \arguments{
 \item{basemap}{a raster map values should be integer (e.g use round) for clumping}
 
-\item{direction}{(default 8) direction for clumping}
+\item{directions}{(default 8) direction for clumping}
 }
 \value{
 raster with same coordinates/dimensions as basemap with clump ids

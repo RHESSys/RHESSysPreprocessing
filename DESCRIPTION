@@ -9,15 +9,18 @@ Description: RHESSys Preprocessing is a set of functions that will produce the f
   which will produce a flow table.  When run together, a metadata document will also be produced.  For instructions on general usage,
   see the READ_ME.txt.  Three example scripts are also included in the package directory.  For further information on specific functions,
   see their help() documentation.
-License: None
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.0
+RoxygenNote: 7.0.2
 Imports:
   raster,
   spgrass6,
   rgrass7,
-  rgdal
+  rgdal,
+  igraph,
+  methods,
+  utils
 Suggests: 
     knitr,
     rmarkdown,
