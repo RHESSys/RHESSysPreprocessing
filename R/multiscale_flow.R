@@ -63,7 +63,7 @@ multiscale_flow = function(CF1, map_list, cfmaps, asp_list){
       CF2[[length(CF2)]]$Slopes = new_slope
       CF2[[length(CF2)]]$Boarder = new_boarder
 
-      if (length(CF2) != 1 & unique(sapply(CF2, "[[", "PatchFamilyID")) != 1) {
+      if (length(CF2) != 1 & length(unique(sapply(CF2, "[[", "PatchFamilyID"))) != 1) {
         for (i in 1:length(CF2[[length(CF2)]])) {
           if(is.na(CF2[[length(CF2)]])[[i]]) {stop("shouldn't have NAs")}
           if(length(CF2[[length(CF2)]][[i]])==0) {stop("shouldn't have numeric(0)'s")}
