@@ -40,12 +40,13 @@ RHESSysPreprocessing contains a few main components:
 Other functions of note that can be used on their own:
 
 * `template_read()`: Reads a template file and produces an R list
-* `build_meta()`: Builds a metadata file. <under construction
-* `convert_flowtable()`: Converts a non-parallelized (RHESSys < 7.0) flowtable to a parallelized flowtable
-* `read_in_flow()`: Reads a flow table and creates an R list
-* `world_redefine()`: Small wrapper for `world_gen()` for creating redefines
 * `update_template()`: Read, modify, and/or output a new template file
-* `world_redefine()`: Read, modify, and/or output a new worldfile
+* `read_world()`: Reads a worldfile and creates a dataframe with catagorized variables
+* `world_redefine()`: Small wrapper for `world_gen()` for creating a redefine worldfile
+* `read_in_flow()`: Reads a flow table and creates an R list
+* `convert_flowtable()`: Converts a non-parallelized (RHESSys < 7.0) flowtable to a parallelized flowtable
+* `build_meta()`: Builds a metadata file. <under construction>
+* `spatial_input_gen()`: Expirimental all-in-one script to generate RHESSys spatial inputs/maps, uses GRASS 7
 
 ## Compatibility
 Developed originally using R Version 3.4.0. May be incompatible with older R versions

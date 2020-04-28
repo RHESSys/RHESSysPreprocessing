@@ -4,21 +4,17 @@
 \alias{build_redefine_template}
 \title{Build Redefine Template}
 \usage{
-build_redefine_template(template, name, replace, overwrite)
+build_redefine_template(template, name, overwrite)
 }
 \arguments{
 \item{template}{Original template file used to generate your worldfile for RHESSys.}
 
 \item{name}{Name of output redefine template to be created}
 
-\item{replace}{DOESNT WORK YET -Indicates the variable-method-values to replace. All others will be given values of "-9999"}
-
 \item{overwrite}{Overwrite existing redefine template? FALSE is default and prompts a menu if worldfile already exists.}
 }
 \description{
-Builds a template file for use in a redefine world.  Allows for specification of which variables to override and replace
-with an absolute or multiplier value. Should be paired with world_redefine function (which is essentially world_gen), to
-create the actual redefine worldfile.
+Builds a template file for use in a redefine world. Pair with world_redefine.
 }
 \author{
 Will Burke
