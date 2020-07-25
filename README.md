@@ -6,6 +6,12 @@
 R package providing preprocessing for the Regional HydroEcologic
 Simulation System (RHESSys).
 
+<!-- badges: start -->
+
+[![R build
+status](https://github.com/RHESSys/RHESSysPreprocessing/workflows/R-CMD-check/badge.svg)](https://github.com/RHESSys/RHESSysPreprocessing/actions)
+<!-- badges: end -->
+
 ## Overview
 
 RHESSysPreprocessing is a set of functions to produce the required

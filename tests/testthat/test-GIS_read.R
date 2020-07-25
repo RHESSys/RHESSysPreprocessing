@@ -21,8 +21,8 @@ test_that("GeoTIFF spatial data can be read", {
   expect_equal(gis_test@data$basin.tif, rep(1,9))
   expect_equal(gis_test@data$patches.tif, c(13319, 13320, 13321, 13485, 13486, 13487, 13646, 13647, 13648))
   # projection is retained
-  expect_equal(gis_test@proj4string,
-               new("CRS", projargs = "+proj=utm +zone=11 +datum=NAD27 +units=m +no_defs +ellps=clrk66 +nadgrids=@conus,@alaska,@ntv2_0.gsb,@ntv1_can.dat"))
+  expect_equal(as.character(gis_test@proj4string),
+               as.character(new("CRS", projargs = "+proj=utm +zone=11 +datum=NAD27 +units=m +no_defs")))
   # cellsize and bounding box are the same
   expect_equal(gis_test@grid@cellsize, c(30.0019175823351, 30.0019176000108))
   expect_equal(as.vector(gis_test@bbox), c(303919.422441758, 4103542.2433688, 304009.428194505, 4103632.2491216))
