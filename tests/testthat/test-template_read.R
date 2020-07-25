@@ -1,4 +1,4 @@
-context("RHESSys-Preprocess testing")
+#context("RHESSys-Preprocess testing")
 library(RHESSysPreprocessing)
 
 test_that("Template is parsed correctly", {
@@ -22,14 +22,3 @@ test_that("Template is parsed correctly", {
   expect_equal(template, ref_template)
 
 })
-
-
-
-# expect_file = function(file) {
-#   file.exists(file)
-# }
-#
-# test_that("Creates worldfile", {
-#
-#
-# })

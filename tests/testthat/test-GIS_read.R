@@ -1,4 +1,4 @@
-context("GIS_read testing")
+#context("GIS_read testing")
 library(RHESSysPreprocessing)
 
 # TEMPORARY
@@ -12,7 +12,7 @@ typepars = system.file("extdata", package = "RHESSysPreprocessing")
 # typepars = "inst/extdata/"
 
 test_that("GeoTIFF spatial data can be read", {
-  map_info[,2] = c("basin.tif", "basin.tif", "patches.tif", "patches.tif", "patches.tif", "patches.tif")
+  map_info[,2] = c("basin.tif", "basin.tif", "basin.tif", "patches.tif", "patches.tif", "patches.tif")
   gis_test = GIS_read(unique(map_info[,2] ), type, typepars, map_info)
 
   # there's two maps
@@ -28,26 +28,39 @@ test_that("GeoTIFF spatial data can be read", {
   expect_equal(as.vector(gis_test@bbox), c(303919.422441758, 4103542.2433688, 304009.428194505, 4103632.2491216))
 })
 
-test_that("ASCII spatial data can be read", {
+test_that("ASCII spatial data (no projection) works", {
+  map_info[,2] = c("basin_grass.asc", "basin_grass.asc", "basin_grass.asc", "patches_grass.asc", "patches_grass.asc", "patches_grass.asc")
+  gis_test = GIS_read(unique(map_info[,2] ), type, typepars, map_info)
 
-
+  # there's two maps
+  expect_length(gis_test@data, 2)
+  # data is the same
+  expect_equal(gis_test@data$basin_grass.asc, rep(1,9))
+  expect_equal(gis_test@data$patches_grass.asc, c(13319, 13320, 13321, 13485, 13486, 13487, 13646, 13647, 13648))
+  # no projection on grass ascii - why it's kinda worse
+  # cellsize and bounding box are the same
+  expect_equal(gis_test@grid@cellsize, c(30.0019175823351, 30.0019176000108))
+  expect_equal(as.vector(gis_test@bbox), c(303919.422441758, 4103542.2433688, 304009.428194505, 4103632.2491216))
 })
 
-test_that("ASCII background 0 vs NA resolve correctly", {
-
-
+test_that("ASCII background NULL (*) are read correctly", {
+  # this could be more elaborate -
+  # I  set the world as the single cell, check if the others are cropped/masked correctly
+  map_info[,2] = c("one_cell_grass.asc", "basin_grass.asc", "basin_grass.asc", "patches_grass.asc", "patches_grass.asc", "patches_grass.asc")
+  gis_test = GIS_read(unique(map_info[,2] ), type, typepars, map_info)
+  expect_length(gis_test$patches_grass.asc, 1)
 })
 
 test_that("seq_patch_IDs arg works", {
-  #gis_test = GIS_read(maps_in = maps_in, type = type, typepars = typepars, map_info = map_info, seq_patch_IDs = TRUE, output_patch_map = FALSE)
+  map_info[,2] = c("basin.tif", "basin.tif", "basin.tif", "patches.tif", "patches.tif", "patches.tif")
+  gis_test = GIS_read(unique(map_info[,2]), type, typepars, map_info, seq_patch_IDs = TRUE, output_patch_map = FALSE)
+  expect_equal(gis_test$patches.tif, seq_along(gis_test$patches.tif))
 })
-
 test_that("output_patch_map arg works", {
-  #gis_test = GIS_read(maps_in = maps_in, type = type, typepars = typepars, map_info = map_info, seq_patch_IDs = TRUE, output_patch_map = TRUE)
+  if (file.exists(system.file("extdata", "patches_seqID.tif", package = "RHESSysPreprocessing"))) {
+    file.remove(system.file("extdata", "patches_seqID.tif", package = "RHESSysPreprocessing"))
+  }
+  map_info[,2] = c("basin.tif", "basin.tif", "basin.tif", "patches.tif", "patches.tif", "patches.tif")
+  gis_test = suppressWarnings(GIS_read(unique(map_info[,2]), type, typepars, map_info, seq_patch_IDs = TRUE, output_patch_map = TRUE))
+  expect_true(file.exists(system.file("extdata", "patches_seqID.tif", package = "RHESSysPreprocessing")))
 })
-
-test_that("unprojected maps work", {
-
-})
-
-
