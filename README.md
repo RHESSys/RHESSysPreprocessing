@@ -10,6 +10,8 @@ Simulation System (RHESSys).
 
 [![R build
 status](https://github.com/RHESSys/RHESSysPreprocessing/workflows/R-CMD-check/badge.svg)](https://github.com/RHESSys/RHESSysPreprocessing/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/RHESSys/RHESSysPreprocessing/branch/master/graph/badge.svg)](https://codecov.io/gh/RHESSys/RHESSysPreprocessing?branch=master)
 <!-- badges: end -->
 
 ## Overview
