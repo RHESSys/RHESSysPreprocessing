@@ -16,7 +16,6 @@ patch_data_analysis(
   cell_length,
   road_width = NULL,
   smooth_flag = FALSE,
-  d4,
   parallel,
   make_stream
 )
@@ -43,9 +42,6 @@ patch_data_analysis(
 \item{road_width}{>0, defaults to 1.}
 
 \item{smooth_flag}{DEPRICATED}
-
-\item{d4}{TRUE/FALSE flag to determine the logic used when finding neighbors in flow table creation. FALSE uses d8 routing, looking at all eight
-neighboring cells. TRUE uses d4 routing, looking at only cardinal directions, not diagonals.}
 
 \item{parallel}{TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.}

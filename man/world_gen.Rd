@@ -52,8 +52,7 @@ for more info on parameters.}
 \item{wrapper}{internal argument to track if being run as all-in-one}
 }
 \description{
-Generates world files for use in RHESSys based on input template and maps,
-currently includes functionality for GRASS GIS and raster data, and works on both unix and windows. 1/23/18.
+Generates world files for use in RHESSys based on input template and maps.
 }
 \seealso{
 \code{\link{raster}}

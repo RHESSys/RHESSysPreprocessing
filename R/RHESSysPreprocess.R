@@ -30,8 +30,6 @@
 #' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
 #' @param parallel TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 #' automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.
-#' @param d4 TRUE/FALSE flag to determine the logic used when finding neighbors in flow table creation. FALSE uses d8 routing, looking at all eight
-#' neighboring cells. TRUE uses d4 routing, looking at only cardinal directions, not diagonals.
 #' @param make_stream The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 #' Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 #' Default is 4.
@@ -57,7 +55,6 @@ RHESSysPreprocess = function(template,
                              seq_patch_IDs = FALSE,
                              output_patch_map = FALSE,
                              parallel = TRUE,
-                             d4 = FALSE,
                              make_stream = 4,
                              wrapper = TRUE) {
 
@@ -150,8 +147,7 @@ RHESSysPreprocess = function(template,
                 roofs = roofs,
                 wrapper = wrapper,
                 parallel = parallel,
-                make_stream = make_stream,
-                d4 = d4)
+                make_stream = make_stream)
 
   # ---------- Run build_meta ----------
   # if (meta) {

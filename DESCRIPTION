@@ -1,14 +1,13 @@
 Package: RHESSysPreprocessing
 Type: Package
 Title: Produces RHESSys Input Data
-Version: 1.0
+Version: 1.0.1
 Author: William Burke
 Maintainer: <wburke@ucsb.edu>
 Description: RHESSys Preprocessing is a set of functions that will produce the files necessary to run RHESSys.
   The main function, RHESSysPreprocess.R is a wrapper which will run world_gen.R, which produces a worldfile, and CreateFlownet.R,
-  which will produce a flow table.  When run together, a metadata document will also be produced.  For instructions on general usage,
-  see the READ_ME.txt.  Three example scripts are also included in the package directory.  For further information on specific functions,
-  see their help() documentation.
+  which will produce a flow table. For instructions on general usage, see the readme.md, and the example 'Script_Run_RHESSysPreprocess.R'.
+  For further information on specific functions see their help() documentation.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -21,12 +21,6 @@
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
 
-# @param road_width
-# @param smooth_flag
-# @param d4,
-# @param parallel,
-# @param make_stream
-
 patch_data_analysis <- function(raw_patch_data,
                                 raw_patch_elevation_data,
                                 raw_hill_data,
@@ -38,10 +32,8 @@ patch_data_analysis <- function(raw_patch_data,
                                 cell_length,
                                 road_width = NULL,
                                 smooth_flag = FALSE,
-                                d4,
                                 parallel,
                                 make_stream) {
-
 
   # -------------------- Error checking and NULL handling --------------------
   if (cell_length <= 0) {stop("Cell length is <=0")}
@@ -137,147 +129,80 @@ patch_data_analysis <- function(raw_patch_data,
   # patch_data is patch data with NA replaced by 0, patches is a vector of ordered patch numbers
   # patch_borders is an array, initailly 0 but will be filled with the number of times patch i
   # touches patch j. the diagonal will be the number of times patch i touches anything.
+  # -------------------- D8 neighbor search and border count --------------------
+  print("Finding patch neighbors",quote = FALSE)
 
-  if (d4) { # d4 neighbor find start -----
-    patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
-    p_rows <- nrow(patch_data)
-    p_cols <- ncol(patch_data)
+  # new - list instead of matrix
+  patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
+  p_rows <- nrow(patch_data)
+  p_cols <- ncol(patch_data)
 
-    for (i in 1:p_rows) { # loop through all rows and cols of input patch data
-      for (j in 1:p_cols) {
-        if (i < p_rows & j < p_cols) { # if both current row and col are less than max
-          if ((patch_data[i,j]*patch_data[i,j + 1] != 0)) {  # if patch itself, and +1 in x dir aren't 0
-            if (patch_data[i,j] != patch_data[i,j + 1]) {  # if +1 in x dir is different patch
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i,j + 1])  #index of patch i,j+1
+  diag_border = 1/sqrt(2*cell_length) # <><><> this is the modifier for diagonal borders. scales inversely with cell size <><><>
 
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
+  pb = txtProgressBar(min = 0,max = sum(patch_data != 0),style = 3)
+  ct = 0
+  for (i in 1:p_rows) { # loop through all rows and cols of input patch data
+    for (j in 1:p_cols) {
+      if (patch_data[i,j] != 0) { # only look for neighbors if current cell is actually a patch
+        ct = ct + 1
+        setTxtProgressBar(pb,ct)
 
-            }
-          }
-          if ((patch_data[i,j]*patch_data[i + 1,j] != 0)) { # if patch itself and +1 in y dir
-            if (patch_data[i,j] != patch_data[i + 1,j]) {  # if +1 in y dir is different patch
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i + 1,j])  #index of patch i+1,j
+        if (j < p_cols) { # ----- all rows, all cols except last
+          if (patch_data[i,j] != patch_data[i,j + 1] & patch_data[i,j + 1] != 0) { # east - is different patch and is not 0
+            p1 <- which(patches == patch_data[i,j])   #index of patch i,j
+            p2 <- which(patches == patch_data[i,j + 1])  #index of patch i,j+1
 
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
-            }
-          }
-        } # end if not max row and col
-        if (j == p_cols & i != p_rows) { # final col exception
-          if ((patch_data[i,j]*patch_data[i + 1,j] != 0)) {  # patch itself, and +1 in either directions aren't 0
-            if (patch_data[i,j] != patch_data[i + 1,j]) {  #lower boundary
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i + 1,j])  #index of patch i+1,j
+            patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
+            patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
+            patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
+            patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
 
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
-            }
-          }
+          } # end east
         }
-        if (i == p_rows & j != p_cols) { # final row exception
-          if ((patch_data[i,j]*patch_data[i,j + 1] != 0)) {  # patch itself, and +1 in either directions aren't 0
-            if (patch_data[i,j] != patch_data[i,j + 1]) {  # rt. side boundary
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i,j + 1])  #index of patch i,j+1
+        if (i < p_rows & j < p_cols) { # ----- all rows/cols except last
+          if (patch_data[i,j] != patch_data[i + 1,j + 1] & patch_data[i + 1,j + 1] != 0) { # southeast - is different patch and is not 0
+            p1 <- which(patches == patch_data[i,j])   #index of patch i,j
+            p2 <- which(patches == patch_data[i + 1,j + 1])  #index of patch i+1,j+1
 
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
-            }
-          }
+            patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
+            patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
+            patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
+            patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + diag_border
+          } # end southeast
         }
-      } # for j
-    } # for i
+        if (i < p_rows) { # ----- all rows except last, all cols
+          if (patch_data[i,j] != patch_data[i + 1,j] & patch_data[i + 1,j] != 0) { # south - is different patch and is not 0
+            p1 <- which(patches == patch_data[i,j])   #index of patch i,j
+            p2 <- which(patches == patch_data[i + 1,j])  #index of patch i+1,j
+
+            patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
+            patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
+            patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
+            patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
+          } # end south
+        }
+        if (i < p_rows & j > 1) { # ----- all rows except last, all cols except first
+          if (patch_data[i,j] != patch_data[i + 1,j - 1] & patch_data[i + 1,j - 1] != 0) { # southwest - is different patch and is not 0
+            p1 <- which(patches == patch_data[i,j])   #index of patch i,j
+            p2 <- which(patches == patch_data[i + 1,j - 1])  #index of patch i+1,j
+
+            patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
+            patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
+            patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
+            patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + diag_border
+          } # end southwest
+        }
+
+      } # end if not 0
+    } # end p_cols loop
+  } # end p_rows loop
+  close(pb)
+
+  # check if no streams of any kind - set lowest patch to stream
+  if (all(flw_struct$Landtype == 0)) {
+    flw_struct[flw_struct$Centroidz == min(flw_struct$Centroidz),"Landtype"] = 1
   }
 
-  # -------------------- D8 neighbor search and border count --------------------
-  if (!d4) {
-
-    print("Finding patch neighbors",quote = FALSE)
-
-    # new - list instead of matrix
-    patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
-    p_rows <- nrow(patch_data)
-    p_cols <- ncol(patch_data)
-
-    diag_border = 1/sqrt(2*cell_length) # <><><> this is the modifier for diagonal borders. scales inversely with cell size <><><>
-
-    pb = txtProgressBar(min = 0,max = sum(patch_data != 0),style = 3)
-    ct = 0
-    for (i in 1:p_rows) { # loop through all rows and cols of input patch data
-      for (j in 1:p_cols) {
-        if (patch_data[i,j] != 0) { # only look for neighbors if current cell is actually a patch
-          ct = ct + 1
-          setTxtProgressBar(pb,ct)
-
-          if (j < p_cols) { # ----- all rows, all cols except last
-            if (patch_data[i,j] != patch_data[i,j + 1] & patch_data[i,j + 1] != 0) { # east - is different patch and is not 0
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i,j + 1])  #index of patch i,j+1
-
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
-
-            } # end east
-          }
-          if (i < p_rows & j < p_cols) { # ----- all rows/cols except last
-            if (patch_data[i,j] != patch_data[i + 1,j + 1] & patch_data[i + 1,j + 1] != 0) { # southeast - is different patch and is not 0
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i + 1,j + 1])  #index of patch i+1,j+1
-
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + diag_border
-            } # end southeast
-          }
-          if (i < p_rows) { # ----- all rows except last, all cols
-            if (patch_data[i,j] != patch_data[i + 1,j] & patch_data[i + 1,j] != 0) { # south - is different patch and is not 0
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i + 1,j])  #index of patch i+1,j
-
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + 1
-            } # end south
-          }
-          if (i < p_rows & j > 1) { # ----- all rows except last, all cols except first
-            if (patch_data[i,j] != patch_data[i + 1,j - 1] & patch_data[i + 1,j - 1] != 0) { # southwest - is different patch and is not 0
-              p1 <- which(patches == patch_data[i,j])   #index of patch i,j
-              p2 <- which(patches == patch_data[i + 1,j - 1])  #index of patch i+1,j
-
-              patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
-              patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
-              patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
-              patch_borders[[p2]][[as.character(p1)]] = sum(patch_borders[[p2]][[as.character(p1)]]) + diag_border
-            } # end southwest
-          }
-
-        } # end if not 0
-      } # end p_cols loop
-    } # end p_rows loop
-    close(pb)
-  } # end d8 if
-
-  # THIS IS DISABLED SINCE NEW PATCH_BORDERS LIST - PROBABLY NOT IMPORTANT ANYWAYS
-  # ----- smooth flag, staircase diagonal correction ----- (Im not really sure how this works, so i haven't messed with it,
-  # it may have an edge row error which occurs with single cell patches like the old find_border_row had -Will)
-  # if (smooth_flag) {
-  #   patch_borders<-find_border_correction(patch_data,patches,patch_borders) #correct for staircase diagonals
-  # }
 
   # ---------- Hillslope parallelization ----------
   # ----- Find and fix hillslopes without stream outlets -----
@@ -290,13 +215,16 @@ patch_data_analysis <- function(raw_patch_data,
 
     # find hillslopes without outlet patches with streams
     min_hill_patch = stats::aggregate(flw_struct$Centroidz,by = list(flw_struct$Hill),FUN = which.min) # min elev patch for each hillslope
+    names(min_hill_patch) = c("hillID", "patchID")
     hill_no_outlets = matrix(0, nrow = length(unique(flw_struct$Hill)), ncol = 2)
+    colnames(hill_no_outlets) = c("hillID", "min_patch_landtype")
     hill_no_outlets[,1] = unique(flw_struct$Hill)
     for (h in hill_no_outlets[,1]) {
       hill_no_outlets[hill_no_outlets[,1] == h,2] = flw_struct[flw_struct$Hill == h,][min_hill_patch[min_hill_patch[,1] == h,2],"Landtype"]
     }
 
-    if (length(flw_struct[,1]) == 1 & all(hill_no_outlets[,2] == 0)) { # for single patch world without outlet
+    # if single patch world without outlet
+    if (length(flw_struct[,1]) == 1 & all(hill_no_outlets[,2] == 0)) {
       flw_struct$Landtype = 1
       hill_no_outlets[1,2] = 1
     }

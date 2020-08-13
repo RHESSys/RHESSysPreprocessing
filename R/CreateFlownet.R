@@ -5,33 +5,11 @@
 #' @param readin readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
 #' used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
 #' Streams map, and other optional maps, still need to be specified.
-#' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
-#' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-#' ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
-#' GRASS GIS being used (6.x or 7.x).  GRASS GIS type can also be set explicitly to "GRASS6" or "GRASS7".
-#' @param typepars Parameters needed based on input data type used. If using raster type, typepars should be a string
-#' indicating the path to a folder containing the raster files that are referenced by the template.
-#' For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
-#' Example parameters are included in an example script included in this package. See initGRASS help
-#' for more info on parameters.
 #' @param asp_list List of aspatial structure and inputs. Used internally
-#' @param streams Streams map to be used in building the flowtable.
-#' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
-#' @param roads Roads map, an optional input for flowtable creation.
 #' @param road_width >0, defaults to 1.
-#' @param impervious Impervious map, an optional input for flowtable creation.
-#' @param roofs Roofs map, an optional input for flowtable creation.
-#' @param parallel TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
-#' automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.
-#' @param d4 TRUE/FALSE flag to determine the logic used when finding neighbors in flow table creation. FALSE uses d8 routing, looking at all eight
-#' neighboring cells. TRUE uses d4 routing, looking at only cardinal directions, not diagonals.
-#' @param make_stream The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
-#' Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
-#'  Default is 4.
-#' @param wrapper internal argument to track if being run as all-in-one
+#' @inheritParams RHESSysPreprocess
 #' @author Will Burke
 #' @export
-
 
 CreateFlownet = function(flownet_name,
                          readin = NULL,
@@ -46,7 +24,6 @@ CreateFlownet = function(flownet_name,
                          roofs = NULL,
                          parallel = TRUE,
                          make_stream = 4,
-                         d4 = FALSE,
                          wrapper = FALSE){
 
   # ------------------------------ Read and check inputs ------------------------------
@@ -145,9 +122,6 @@ CreateFlownet = function(flownet_name,
   raw_impervious_data = NULL
   if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
-  # ----- SMOOTH FLAG STILL NEEDS TO BE LOOKED AT AGAIN -----
-  smooth_flag = FALSE
-
   # ------------------------------ Make flownet list ------------------------------
   print("Building flowtable",quote = FALSE)
   CF1 = patch_data_analysis(
@@ -162,7 +136,6 @@ CreateFlownet = function(flownet_name,
     road_width = road_width,
     cell_length = cell_length,
     smooth_flag = smooth_flag,
-    d4 = d4,
     parallel = parallel,
     make_stream = make_stream)
 

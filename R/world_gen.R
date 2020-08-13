@@ -1,26 +1,7 @@
 #' World Gen
 #'
-#' Generates world files for use in RHESSys based on input template and maps,
-#' currently includes functionality for GRASS GIS and raster data, and works on both unix and windows. 1/23/18.
-#' @param template Template file used to generate worldfile for RHESSys. Generic strucutre is:
-#' <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
-#' <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
-#' by your chosen method of data input(GRASS or raster), set using the "type" arguement.
+#' Generates world files for use in RHESSys based on input template and maps.
 #' @param worldfile Name and path of worldfile to be created.
-#' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
-#' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-#' ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
-#' GRASS GIS being used (6.x or 7.x).  GRASS GIS type can also be set explicitly to "GRASS6" or "GRASS7".
-#' @param typepars Parameters needed based on input data type used. If using raster type, typepars should be a string
-#' indicating the path to a folder containing the raster files that are referenced by the template.
-#' For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
-#' Example parameters are included in an example script included in this package. See initGRASS help
-#' for more info on parameters.
-#' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
-#' @param unique_strata_ID Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.
-#' @param seq_patch_IDs TRUE/FALSE should patch map IDs be overwritten with sequential integers.
-#' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
-#' @param asprules The path and filename to the rules file.  Using this argument enables aspatial patches.
 #' @inheritParams RHESSysPreprocess
 #' @seealso \code{\link{raster}}
 #' @author Will Burke
