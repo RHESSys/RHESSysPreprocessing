@@ -123,7 +123,7 @@ CreateFlownet = function(flownet_name,
   if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
   # ------------------------------ Make flownet list ------------------------------
-  print("Building flowtable",quote = FALSE)
+  cat("Building flowtable")
   CF1 = patch_data_analysis(
     raw_patch_data = raw_patch_data,
     raw_patch_elevation_data = raw_patch_elevation_data,
@@ -150,9 +150,9 @@ CreateFlownet = function(flownet_name,
   }
 
   # ---------- Flownet list to flow table file ----------
-  print("Writing flowtable",quote = FALSE)
+  cat("Writing flowtable")
   make_flow_table(flw = CF1, output_file = flownet_name, parallel = parallel)
 
-  print(paste("Created flowtable:",flownet_name),quote = FALSE)
+  cat("Created flowtable: ",flownet_name)
 
 }

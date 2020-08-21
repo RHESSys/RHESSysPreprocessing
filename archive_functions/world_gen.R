@@ -36,7 +36,7 @@ world_gen = function(template,
   options(scipen = 999) # no scientific notation
 
   if (!file.exists(template)) {
-    print(paste("Template does not exist or is not located at specified path:",template),quote = FALSE) #check if template exists
+    stop("Template does not exist or is not located at specified path: ",template) #check if template exists
   }
 
   worldname = basename(worldfile)# Coerce .world extension
@@ -190,13 +190,13 @@ world_gen = function(template,
         statevars[[i]][[s]] = aggregate(cellarea, by = level_agg, FUN = "sum")
 
       } else {
-        print(paste("Unexpected 2nd element on line", i))
+        stop("Unexpected 2nd element on template line ", i, ": '", template_clean[[i]],"'" )
       }
     }
   }
 
   # ---------- Build world file ----------
-  print("Writing worldfile",quote = FALSE)
+  cat("Writing worldfile")
   stratum = 1:template_clean[[level_index[6]]][3] # count of stratum
 
   progress = 0
@@ -379,12 +379,12 @@ world_gen = function(template,
   sink()
   close(pb)
 
-  print(paste("Created worldfile:",worldfile),quote = FALSE)
+  cat("Created worldfile: ",worldfile)
 
   if (header) {
     headfile = paste(substr(worldfile,0,(nchar(worldfile) - 5)),"hdr",sep = "")
     write(head,file = headfile)
-    print(paste("Created header file:",headfile),quote = FALSE)
+    cat("Created header file: ",headfile)
   }
 
   #----------Output parameters for CreateFlownet-----------

@@ -49,7 +49,7 @@ patch_data_analysis <- function(raw_patch_data,
   options(scipen = 999) # IF DEBUGGING YOU WILL HAVE ERRORS ON LARGE BASINS WITHOUT THIS - comes from numeric to character conversion
 
   # -------------------- Build unique patch IDs --------------------
-  print("Generating unique IDs",quote = FALSE)
+  cat("Generating unique patch IDs")
 
   id_data = data.frame("Basin" = as.vector(raw_basin_data[!is.na(raw_basin_data)]),
                        "Hill" = as.vector(raw_hill_data[!is.na(raw_basin_data)]),
@@ -130,7 +130,7 @@ patch_data_analysis <- function(raw_patch_data,
   # patch_borders is an array, initailly 0 but will be filled with the number of times patch i
   # touches patch j. the diagonal will be the number of times patch i touches anything.
   # -------------------- D8 neighbor search and border count --------------------
-  print("Finding patch neighbors",quote = FALSE)
+  cat("Finding patch neighbors")
 
   # new - list instead of matrix
   patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
@@ -230,7 +230,7 @@ patch_data_analysis <- function(raw_patch_data,
     }
 
     if (any(hill_no_outlets[,2] == 0) & length(flw_struct[,1]) != 1) { # if there are any hillslopes without streams
-      print("Correcting for hillslopes missing stream outlets.",quote = FALSE)
+      cat("Correcting for hillslopes missing stream outlets")
       streams = flw_struct[flw_struct$Landtype == 1,] # make var of streams
       for (i in hill_no_outlets[hill_no_outlets[,2] == 0,1]) {
         hill_patches = flw_struct[flw_struct$Hill == i,] # get patches from problem hillslope
@@ -255,12 +255,12 @@ patch_data_analysis <- function(raw_patch_data,
       }
     }
     if (!is.null(no_stream_fix)) {
-      print(paste(length(no_stream_fix),"hillslopes had their lowest elevation patches set to streams, at a max distance from existing streams of",
-                  max(print_dist_fix),"cell lengths."),quote = FALSE)
+      cat(paste(length(no_stream_fix),"hillslopes had their lowest elevation patches set to streams, at a max distance from existing streams of",
+                  max(print_dist_fix),"cell lengths."))
     }
     if (!is.null(no_stream)) { # output hillslopes that weren't corrected
-      print(paste("The following outlet patches were outside of the",make_stream,"cell length distance threshold set by the 'make_stream' argument."),quote = F)
-      print(cbind("Dist2Stream" = print_dist,flw_struct[no_stream,]))
+      cat("The following outlet patches were outside of the",make_stream,"cell length distance threshold set by the 'make_stream' argument.")
+      cat("Dist2Stream" = print_dist,flw_struct[no_stream,])
       stop(noquote("The above hillslopes must have stream patch outlets, either increase the value of the 'make_stream' argument, or fix via GIS."))
     }
   } # end parallel if
@@ -269,7 +269,7 @@ patch_data_analysis <- function(raw_patch_data,
   # Build list for output. Turn border count into probabilities and lists of neighbors
   lst <- list()
 
-  print("Buildling flowtable list",quote = FALSE)
+  cat("Buildling flowtable list")
   pb = txtProgressBar(min = 0,max = length(flw_struct$Number),style = 3)
 
   for (i in 1:length(flw_struct$Number)) {

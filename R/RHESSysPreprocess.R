@@ -60,7 +60,7 @@ RHESSysPreprocess = function(template,
 
   # ---------- Check Inputs ----------
   if (!file.exists(template)) { # check if template exists
-    print(paste("Template does not exist or is not located at specified path:",template),quote = FALSE)
+    cat("Template does not exist or is not located at specified path:",template)
   }
 
   basename = basename(name) # check Name
@@ -100,7 +100,7 @@ RHESSysPreprocess = function(template,
   }
 
   # ---------- Run world_gen ----------
-  print("Begin world_gen.R",quote = FALSE)
+  cat("Begin world_gen.R")
 
   if (file.exists(worldfile) & overwrite == FALSE) { # check for worldfile overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
@@ -124,7 +124,7 @@ RHESSysPreprocess = function(template,
   asp_list = world_gen_out[[2]]
 
   # ---------- Run CreateFlownet ----------
-  print("Begin CreateFlownet.R",quote = FALSE)
+  cat("Begin CreateFlownet.R")
 
   if (file.exists(flownet_name) & overwrite == FALSE) { # check for flownet overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(

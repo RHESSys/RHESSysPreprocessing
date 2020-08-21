@@ -9,9 +9,11 @@ spatial_input_gen(
   DEM,
   GRASS_path,
   threshold,
+  r_output = FALSE,
+  overwrite = FALSE,
   basin = NULL,
-  patch = NULL,
-  define_watershed = NULL,
+  patch = FALSE,
+  define_watershed = FALSE,
   easting = NULL,
   northing = NULL,
   gisDbase = NULL,
@@ -27,6 +29,10 @@ spatial_input_gen(
 \item{GRASS_path}{Path to grass isntall location}
 
 \item{threshold}{threshold for upstream patches to make a stream}
+
+\item{r_output}{Should the resulting maps be output from the funciton into R}
+
+\item{overwrite}{Should output files overwrite exisitng}
 
 \item{basin}{optional input basin map}
 

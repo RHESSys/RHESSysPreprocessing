@@ -6,6 +6,8 @@
 #' @param DEM name of DEM map
 #' @param GRASS_path Path to grass isntall location
 #' @param threshold threshold for upstream patches to make a stream
+#' @param r_output Should the resulting maps be output from the funciton into R
+#' @param overwrite Should output files overwrite exisitng
 #' @param basin optional input basin map
 #' @param patch optional method to define patches
 #' @param define_watershed Optional method to define watershed outline
@@ -21,22 +23,23 @@ spatial_input_gen = function(name,
                              DEM,
                              GRASS_path,
                              threshold,
+                             r_output = FALSE,
+                             overwrite = FALSE,
                              basin = NULL,
-                             patch = NULL,
-                             define_watershed = NULL,
+                             patch = FALSE,
+                             define_watershed = FALSE,
                              easting = NULL,
                              northing = NULL,
                              gisDbase = NULL,
                              location = NULL,
                              mapset = NULL) {
 
+  warning("Work in progress - May not work, output crs/proj is weird, optional args/fucntionality is broken, probably best to run line by line")
 
   # check and convert file paths for args
 
 
   # check GRASS location and version - requires grass 7
-
-
   out_maps = NULL
 
   # set initial grass environment
@@ -44,22 +47,30 @@ spatial_input_gen = function(name,
                             home = tempdir(),
                             override = TRUE)
   # add basin map to new location
-  rgrass7::execGRASS(cmd = "r.in.gdal", input = basin, output = "basin", location = "temp_loc")
-  # set grass environment to new (correctly projected) location
-  init = rgrass7::initGRASS(gisBase = GRASS_path,
-                            home = tempdir(),
-                            location = "temp_loc",
-                            mapset = "PERMANENT",
-                            override = TRUE)
-
-  # check if same proj - should be quiet but idk
-  check = rgrass7::execGRASS(cmd = "r.in.gdal",flags = c("j","quiet"), input = DEM)
-  # if projections don't match
-  if (check == 1) {
-    # add DEM to its own location
+  if (!is.null(basin)) {
+    rgrass7::execGRASS(cmd = "r.in.gdal", input = basin, output = "basin", location = "temp_loc")
+    # set grass environment to new (correctly projected) location
+    init = rgrass7::initGRASS(gisBase = GRASS_path,
+                              home = tempdir(),
+                              location = "temp_loc",
+                              mapset = "PERMANENT",
+                              override = TRUE)
+    # check if same proj - should be quiet but idk
+    check = rgrass7::execGRASS(cmd = "r.in.gdal",flags = c("j","quiet"), input = DEM)
+    # if projections don't match
+    if (check == 1) {
+      # add DEM to its own location
+      rgrass7::execGRASS(cmd = "r.in.gdal", input = DEM, output = "DEM", location = "dem_loc")
+      # project DEM from that location to current loc (temp_loc)
+      rgrass7::execGRASS(cmd = "r.proj", location = "dem_loc", mapset = "PERMANENT", input = "DEM")
+    }
+  } else {
     rgrass7::execGRASS(cmd = "r.in.gdal", input = DEM, output = "DEM", location = "dem_loc")
-    # project DEM from that location to current loc (temp_loc)
-    rgrass7::execGRASS(cmd = "r.proj", location = "dem_loc", mapset = "PERMANENT", input = "DEM")
+    init = rgrass7::initGRASS(gisBase = GRASS_path,
+                              home = tempdir(),
+                              location = "dem_loc",
+                              mapset = "PERMANENT",
+                              override = TRUE)
   }
 
   # --- checking env and stuff ---
@@ -69,7 +80,11 @@ spatial_input_gen = function(name,
   # rgrass7::execGRASS(cmd = "g.list", flags = "p", type = "raster")
 
   # check if basin exists and use it as region if it does, if not use raster
-  rgrass7::execGRASS(cmd = "g.region", raster = "basin")
+  if (!is.null(basin)) {
+    rgrass7::execGRASS(cmd = "g.region", raster = "basin")
+  } else {
+    rgrass7::execGRASS(cmd = "g.region", raster = "DEM")
+  }
   #rgrass7::execGRASS(cmd = "g.region", flags = "p") # print it
 
   # get slope and aspect maps
@@ -141,7 +156,7 @@ spatial_input_gen = function(name,
   }
 
   # Roads - zero map
-  rgrass7::execGRASS(cmd = "r.mapcalc", expression = 'zero = ("DEM" > 0)*0')
+  #rgrass7::execGRASS(cmd = "r.mapcalc", expression = 'zero = ("DEM" > 0)*0')
 
   if (define_watershed) {
     # ADDING AN INTERACTIVE GUI MAP HERE WOULD ALLOW FOR PRETTY SIMPLE BASIN DELINEATION
@@ -152,8 +167,29 @@ spatial_input_gen = function(name,
 
   # Write rasters
   out_names = paste0(name,"_",out_maps,".tif")
+  # check dir, maybe make new one
+  #outdir = file.path(getwd(),dirname(name))
+  outdir = dirname(name)
+  if (!dir.exists(outdir)) {
+    dir.create(dirname(name))
+  }
+
+  # make a new dir, this should be an option or something
+  #dir.create(path = file.path(dirname(name), "out_maps") )
+
+  outflags = c("c", "m", c("overwrite")[overwrite])
+
   for (i in 1:length(out_maps)) {
-    rgrass7::execGRASS(cmd = "r.out.gdal", input = out_maps[i], output = out_names[i], format = "GTiff", type = "Float64")
+    cat("\n-- Writing '",out_maps[i] ,"', map ", i, " of ",length(out_maps)," --\n",sep = "")
+    rgrass7::execGRASS(cmd = "r.out.gdal", flags = outflags, input = out_maps[i], output = out_names[i], format = "GTiff", type = "Float64")
+  }
+
+  if (r_output) {
+    rgrass7::use_sp()
+    rout = rgrass7::readRAST(vname = out_maps )
+    return(rout)
+  } else {
+    return(NULL)
   }
 
 

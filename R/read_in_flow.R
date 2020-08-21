@@ -7,7 +7,7 @@
 #' @export
 #'
 read_in_flow <- function(input_file, df = FALSE) {
-  print("Reading in flow table")
+  cat("Reading in flow table")
 
   parallel <- length(scan(file = input_file, nlines = 1, skip = 1, quiet = TRUE)) == 2 # check if flow table is parallelized, if 2nd line is 2 elements long
 
