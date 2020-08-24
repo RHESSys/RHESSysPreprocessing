@@ -3,7 +3,6 @@
 #' This function is the main component of the larger create_flownet function.
 #' Function finds neighbors, calculates flow, accounts for pits, roads, streams etc.
 #' cell_length is size of cell in meters.
-#' DEPRICATED smooth_flag is a boolean that smoothes jagged patch borders
 #' @param raw_patch_data patch matrix
 #' @param raw_patch_elevation_data DEM matrix
 #' @param raw_hill_data hillslope matrix
@@ -13,7 +12,6 @@
 #' @param raw_stream_data stream map matrix
 #' @param raw_road_data road map matrix
 #' @param cell_length cell length in meters
-#' @param smooth_flag DEPRICATED
 #' @inheritParams RHESSysPreprocess
 #' @inheritParams CreateFlownet
 #' @author Daniel Nash
@@ -21,7 +19,7 @@
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
 
-patch_data_analysis <- function(raw_patch_data,
+make_flow_list <- function(raw_patch_data,
                                 raw_patch_elevation_data,
                                 raw_hill_data,
                                 raw_basin_data,
@@ -31,7 +29,6 @@ patch_data_analysis <- function(raw_patch_data,
                                 raw_road_data,
                                 cell_length,
                                 road_width = NULL,
-                                smooth_flag = FALSE,
                                 parallel,
                                 make_stream) {
 
@@ -136,8 +133,8 @@ patch_data_analysis <- function(raw_patch_data,
   patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
   p_rows <- nrow(patch_data)
   p_cols <- ncol(patch_data)
-
-  diag_border = 1/sqrt(2*cell_length) # <><><> this is the modifier for diagonal borders. scales inversely with cell size <><><>
+  # <><><> this is the modifier for diagonal borders. scales inversely with cell size <><><>
+  diag_border = 1/sqrt(2*cell_length)
 
   pb = txtProgressBar(min = 0,max = sum(patch_data != 0),style = 3)
   ct = 0
@@ -146,12 +143,10 @@ patch_data_analysis <- function(raw_patch_data,
       if (patch_data[i,j] != 0) { # only look for neighbors if current cell is actually a patch
         ct = ct + 1
         setTxtProgressBar(pb,ct)
-
         if (j < p_cols) { # ----- all rows, all cols except last
           if (patch_data[i,j] != patch_data[i,j + 1] & patch_data[i,j + 1] != 0) { # east - is different patch and is not 0
             p1 <- which(patches == patch_data[i,j])   #index of patch i,j
             p2 <- which(patches == patch_data[i,j + 1])  #index of patch i,j+1
-
             patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
             patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
             patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
@@ -163,7 +158,6 @@ patch_data_analysis <- function(raw_patch_data,
           if (patch_data[i,j] != patch_data[i + 1,j + 1] & patch_data[i + 1,j + 1] != 0) { # southeast - is different patch and is not 0
             p1 <- which(patches == patch_data[i,j])   #index of patch i,j
             p2 <- which(patches == patch_data[i + 1,j + 1])  #index of patch i+1,j+1
-
             patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
             patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
             patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
@@ -174,7 +168,6 @@ patch_data_analysis <- function(raw_patch_data,
           if (patch_data[i,j] != patch_data[i + 1,j] & patch_data[i + 1,j] != 0) { # south - is different patch and is not 0
             p1 <- which(patches == patch_data[i,j])   #index of patch i,j
             p2 <- which(patches == patch_data[i + 1,j])  #index of patch i+1,j
-
             patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + 1
             patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + 1
             patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + 1
@@ -185,7 +178,6 @@ patch_data_analysis <- function(raw_patch_data,
           if (patch_data[i,j] != patch_data[i + 1,j - 1] & patch_data[i + 1,j - 1] != 0) { # southwest - is different patch and is not 0
             p1 <- which(patches == patch_data[i,j])   #index of patch i,j
             p2 <- which(patches == patch_data[i + 1,j - 1])  #index of patch i+1,j
-
             patch_borders[[p1]]$Total = patch_borders[[p1]]$Total + diag_border
             patch_borders[[p1]][[as.character(p2)]] = sum(patch_borders[[p1]][[as.character(p2)]]) + diag_border
             patch_borders[[p2]]$Total = patch_borders[[p2]]$Total + diag_border
@@ -203,19 +195,21 @@ patch_data_analysis <- function(raw_patch_data,
     flw_struct[flw_struct$Centroidz == min(flw_struct$Centroidz),"Landtype"] = 1
   }
 
-
-  # ---------- Hillslope parallelization ----------
-  # ----- Find and fix hillslopes without stream outlets -----
-  # check if the most downslope is a stream - small but potentially important distinction since pit filling relies on this
+  # ---------- Hillslope parallelization checks ----------
   if (parallel) {
+    # ----- Find and fix hillslopes without stream outlets -----
+    # outlet patches missing streams that were fixed
     no_stream_fix = NULL
+    # outlet patches missing streams that were NOT fixed
     no_stream = NULL
+    # keep track of distances form fixed/unfixed patches to the existing streams
     print_dist_fix = NULL
     print_dist = NULL
 
-    # find hillslopes without outlet patches with streams
+    # find hillslopes without outlet patches - lowest elev with streams
     min_hill_patch = stats::aggregate(flw_struct$Centroidz,by = list(flw_struct$Hill),FUN = which.min) # min elev patch for each hillslope
-    names(min_hill_patch) = c("hillID", "patchID")
+    # this is patch index actually, was patchID, now patch_ind
+    names(min_hill_patch) = c("hillID", "patch_ind")
     hill_no_outlets = matrix(0, nrow = length(unique(flw_struct$Hill)), ncol = 2)
     colnames(hill_no_outlets) = c("hillID", "min_patch_landtype")
     hill_no_outlets[,1] = unique(flw_struct$Hill)
@@ -250,9 +244,8 @@ patch_data_analysis <- function(raw_patch_data,
             no_stream = c(no_stream,min_patch$Number)
             print_dist = c(print_dist,min(dist2stream))
           }
-        }
-
-      }
+        } # end else if make stream is num
+      } # end for hills w/o outlets
     }
     if (!is.null(no_stream_fix)) {
       cat(paste(length(no_stream_fix),"hillslopes had their lowest elevation patches set to streams, at a max distance from existing streams of",
@@ -263,6 +256,88 @@ patch_data_analysis <- function(raw_patch_data,
       cat("Dist2Stream" = print_dist,flw_struct[no_stream,])
       stop(noquote("The above hillslopes must have stream patch outlets, either increase the value of the 'make_stream' argument, or fix via GIS."))
     }
+
+
+
+    find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill) {
+      # add start to found, only for first itr tho
+      if (is.null(history)) {
+        found = start
+      }
+      # update history to include current patch
+      history = c(history, start)
+      # find the neighbors
+      neighbors = names(patch_borders[[start]])[-1][names(patch_borders[[start]])[-1] %in% flw_struct[flw_struct$Hill == hill, "Number"]]
+      # update the found vector to include those neighbors
+      found = c(found, neighbors)
+      # remove the found from missing
+      missing = missing[!missing %in% found]
+      # check if we have any missing left
+      if (length(missing) == 0) {
+        return(NULL)
+      }
+      # if our history is the same as the patches we've found, then give up there's a segmented patch
+      if (all(found %in% history)) {
+        return(missing)
+      }
+      # if we haven't found everything, keep iterating through found patches not in the history
+      next_patch = as.numeric(found[!found %in% history][1])
+      find_connected(
+        patch_borders = patch_borders,
+        start = next_patch,
+        history = history,
+        found = found,
+        missing = missing,
+        hill = hill
+      )
+    }
+
+    # check for segmented hillslopes - this is going to be so slow but oh well
+    cat("Checking for segmented hillslopes")
+    segmented_hills = NULL
+    segmented_patch_ct = NULL
+    segmented_patch_list = list()
+
+    pb = txtProgressBar(min = 0,max = length(unique(flw_struct$Hill)),style = 3)
+    ct = 0
+
+    for (i in unique(flw_struct$Hill)) {
+      ct = ct + 1
+      setTxtProgressBar(pb,ct)
+      # start from outlet
+      min_patch = flw_struct[flw_struct$Hill == i,][min_hill_patch[min_hill_patch$hillID == i, "patch_ind"],]
+      all_patches = flw_struct[flw_struct$Hill == i, "Number"]
+
+      missing = find_connected(
+        patch_borders = patch_borders,
+        start = min_patch$Number,
+        history = NULL,
+        found = NULL,
+        missing = all_patches,
+        hill = i
+      )
+
+      if (!is.null(missing)) {
+
+        segmented_hills = c(segmented_hills, i)
+        segmented_patch_ct = c(segmented_patch_ct, length(missing))
+        segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
+        segmented_patch_list[[as.character(i)]] = missing
+
+        warning(
+          "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
+          "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
+          "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
+        )
+        print(segmented_df)
+        #error("")
+
+      }
+
+    } # end for segmented hills
+    close(pb)
+
+
   } # end parallel if
 
   # -------------------- Build list --------------------

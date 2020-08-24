@@ -29,7 +29,7 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
   }
 
   # ---------- Read in spatial data ----------
-  cat("Reading in maps\n")
+  cat("Reading in maps...\n")
   # GRASS 6.4.4 ----------
   if (type == "GRASS6") {
     spgrass6::initGRASS( # Initialize GRASS environment

@@ -1,7 +1,7 @@
 Package: RHESSysPreprocessing
 Type: Package
 Title: Produces RHESSys Input Data
-Version: 1.0.1
+Version: 1.0.2
 Author: William Burke
 Maintainer: <wburke@ucsb.edu>
 Description: RHESSys Preprocessing is a set of functions that will produce the files necessary to run RHESSys.
@@ -11,7 +11,7 @@ Description: RHESSys Preprocessing is a set of functions that will produce the f
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports:
   raster,
   spgrass6,

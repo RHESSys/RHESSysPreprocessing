@@ -24,7 +24,7 @@ CreateFlownet = function(flownet_name,
                          roofs = NULL,
                          parallel = TRUE,
                          make_stream = 4,
-                         wrapper = FALSE){
+                         wrapper = FALSE) {
 
   # ------------------------------ Read and check inputs ------------------------------
   cfbasename = basename(flownet_name) # Coerce .flow extension
@@ -76,20 +76,14 @@ CreateFlownet = function(flownet_name,
     }
   }
 
-  # check inpputs are maps or values
+  # check inputs are maps or values
   notamap = cfmaps[suppressWarnings( which(!is.na(as.numeric(cfmaps[,2])))),1]
   maps_in = unique(cfmaps[cfmaps[,2] != "none" & !cfmaps[,1] %in% notamap,2])
 
   # ------------------------------ Use GIS_read to get maps ------------------------------
   readmap = GIS_read(maps_in, type, typepars, map_info = cfmaps)
 
-  # going to get rid of this
-  map_ar_clean = as.array(readmap)
-  dimnames(map_ar_clean)[[3]] = colnames(readmap@data)
-
-  # this is better
   map_list = lapply(readmap@data, matrix, nrow = readmap@grid@cells.dim[1], ncol = readmap@grid@cells.dim[2])
-
   raw_patch_data = map_list[[cfmaps[cfmaps[, 1] == "patch", 2]]]
   raw_hill_data = map_list[[cfmaps[cfmaps[, 1] == "hillslope", 2]]]
   raw_basin_data = map_list[[cfmaps[cfmaps[, 1] == "basin", 2]]]
@@ -108,15 +102,12 @@ CreateFlownet = function(flownet_name,
   } else {
     raw_patch_elevation_data = map_list[[unique(cfmaps[cfmaps[, 1] == "z", 2])]]
   }
-
   cell_length = readmap@grid@cellsize[1]
-
   # Roads
   raw_road_data = NULL
   if (!is.null(roads)) {raw_road_data =  map_list[[cfmaps[cfmaps[,1] == "roads",2]]]}
-
   # Roofs and impervious is not yet implemented - placeholders for now -----
-  if (!is.null(roofs) | !is.null(impervious)) {print("Roofs and impervious are not yet working",quote = FALSE)}
+  if (!is.null(roofs) | !is.null(impervious)) {print("Roofs and impervious are not yet working probably i think",quote = FALSE)}
   raw_roof_data = NULL
   if (!is.null(roofs)) {raw_roof_data =  map_list[[cfmaps[cfmaps[,1] == "roofs",2]]]}
   raw_impervious_data = NULL
@@ -124,7 +115,7 @@ CreateFlownet = function(flownet_name,
 
   # ------------------------------ Make flownet list ------------------------------
   cat("Building flowtable")
-  CF1 = patch_data_analysis(
+  CF1 = make_flow_list(
     raw_patch_data = raw_patch_data,
     raw_patch_elevation_data = raw_patch_elevation_data,
     raw_basin_data = raw_basin_data,
@@ -135,7 +126,6 @@ CreateFlownet = function(flownet_name,
     raw_road_data = raw_road_data,
     road_width = road_width,
     cell_length = cell_length,
-    smooth_flag = smooth_flag,
     parallel = parallel,
     make_stream = make_stream)
 
