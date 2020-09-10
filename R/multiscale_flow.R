@@ -7,7 +7,7 @@ multiscale_flow = function(CF1, map_list, cfmaps, asp_list){
   # Inputs: exisiting flow table (list), map arrays, map list, aspatial/multiscale rule list
 
   # ----- Variable setup -----
-  asp_map = map_list[["asp_rule"]] # matrix of aspatial rules
+  asp_map = map_list[[cfmaps[cfmaps[,1] == "asp_rule",2]]] # matrix of aspatial rules
 
   patch_ID = unlist(lapply(CF1, "[[",9)) # patch IDs from cf1
   numbers = unlist(lapply(CF1, "[[",1)) # flow list numbers
@@ -46,7 +46,7 @@ multiscale_flow = function(CF1, map_list, cfmaps, asp_list){
       for (nbr in old_nbrs) { # loop through old neighbors - neighbors are numbers not patches
         nbr_patch = patch_ID[numbers == nbr]
         nbr_id = asp_map[which(raw_patch_data == nbr_patch)]
-        nbr_id = unique(nbr_id)
+        nbr_id = unique(paste0("rule_",nbr_id))
         if (length(nbr_id) > 1) {stop(paste("multiple aspatial rules for patch",nbr_patch))} # if multiple rules for a single patch
         nbr_asp_ct = ncol(rulevars[[nbr_id]]$patch_level_vars[1,]) - 1
         gamma = old_gammas[which(old_nbrs == nbr)]

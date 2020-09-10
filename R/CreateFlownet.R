@@ -134,6 +134,7 @@ CreateFlownet = function(flownet_name,
     if ("asp_rule" %in% notamap) {
       map_list[["asp_rule"]] = raw_basin_data
       map_list[["asp_rule"]][!is.na(map_list[["asp_rule"]])] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
+      cfmaps = rbind(cfmaps, c("asp_rule", "asp_rule"))
     }
 
     CF1 = multiscale_flow(CF1 = CF1, map_list = map_list, cfmaps = cfmaps, asp_list = asp_list)
