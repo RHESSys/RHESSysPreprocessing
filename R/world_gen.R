@@ -61,10 +61,17 @@ world_gen = function(template,
   }
 
   # -------------------- Read in Maps --------------------
-  read_maps = GIS_read(maps_in,type,typepars,map_info, )
+  read_maps = GIS_read(
+    maps_in = maps_in,
+    type = type,
+    typepars = typepars,
+    map_info = map_info,
+    seq_patch_IDs = seq_patch_IDs,
+    output_patch_map = output_patch_map
+  )
 
   # process map data
-  if (length(read_maps@data[,1]) == 1){
+  if (length(read_maps@data[,1]) == 1) {
     map_df = as.data.frame(read_maps@data) # works for 1 patch world
   } else {
     map_df = as.data.frame(read_maps) #make data frame for ease of use
@@ -300,7 +307,7 @@ world_gen = function(template,
           if (length(patches) == 1 & length(asp_ct) == 1){
             total_patches = length(patches) * asp_ct
           } else {
-            total_patches = sum(asp_ct[levels[levels[,5] == patches & levels[,4] == z & levels[,3] == h & levels[,2] == b, 7]])
+            total_patches = sum(asp_ct[unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b,])[, 7]])
           }
 
           writeChar(paste("\t\t\t",total_patches,"\t\t\t","num_patches\n",sep = ""),con = wcon,eos = NULL)

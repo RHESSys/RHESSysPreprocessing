@@ -100,7 +100,7 @@ RHESSysPreprocess = function(template,
   }
 
   # ---------- Run world_gen ----------
-  cat("Begin world_gen.R")
+  cat("Begin world_gen.R\n")
 
   if (file.exists(worldfile) & overwrite == FALSE) { # check for worldfile overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(

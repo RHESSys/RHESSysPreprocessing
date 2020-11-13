@@ -32,6 +32,7 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
   cat("Reading in maps...\n")
   # GRASS 6.4.4 ----------
   if (type == "GRASS6") {
+    warning("Type 'GRASS' of map input is no longer being supported and will be removed")
     spgrass6::initGRASS( # Initialize GRASS environment
       gisBase = typepars[1],
       home = typepars[2],
@@ -58,6 +59,8 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
 
   # GRASS 7 ----------
   if (type == "GRASS7") {
+    warning("Type 'GRASS' of map input is no longer being supported and will be removed")
+
     rgrass7::initGRASS( # Initialize GRASS environment
       gisBase = typepars[1],
       home = typepars[2],
@@ -90,7 +93,7 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
     file_paths = vector(mode = "character")
     for (name in maps_in) {
       file = list.files(path = typepars, pattern = paste("^",name,"$",sep = ""),full.names = TRUE)
-      if (length(file) == 0) { # if no files match name in template, try with exensions
+      if (length(file) == 0) { # if no files match name in template, try with extensions
         file = list.files(path = typepars, pattern = paste("^",name,"\\.",sep = ""),full.names = TRUE)
       }
       if (length(file) == 0) { # if there were no matches
@@ -107,10 +110,9 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
 
     # read in rasters
     # NATIVE DRIVERS -- may or may not actually help, future testing maybe
-    read_stack = try(raster::stack(file_paths))
+    read_stack = try(raster::stack(x = file_paths))
 
     if (inherits(read_stack, "try-error")) { # automatic error handling, can be added to as errors are found -----
-
       if (attr(read_stack,"condition")$message == "different extent") { # check/compare extents
         extents = list()
         for (i in file_paths) { # get extents
@@ -125,7 +127,6 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
       } # end if different extents
 
       # other types of errors go here
-
       stop("Something went wrong, see previous messages")
     } # end try error handling
 
@@ -149,26 +150,33 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
       print(paste("Differing projection arguments:",unique(p),"Potential conflicts."),quote = FALSE)
     }
 
-    # if(is.na(raster::projection(read_stack))){
-    #   print("Rasters are missing projection information. Shouldn't effect RHESSysPreprocess functions.")
-    # }
+    # Handle NaNs - set to NA
+    cat("Setting NaNs to NA.\n")
+    raster::values(read_stack)[is.nan(raster::values(read_stack))] = NA
 
     # Handling grass ascii 0's - get rid of 0's for background/NA -----
-    # Ideeally this should be handled when reading in files, but I can't find where the default for nodata is set,
-    # and strangely this is an ascii specific issue
+    # Ideally this should be handled when reading in files, but I can't find where the default for nodata is set
     if ((any(d == "AAIGrid") | any(d == "GRASSASCIIGrid")) & !is.null("map_info")) {
-      # raster::values(read_stack)[apply(raster::values(read_stack)==0,FUN = all,MARGIN = 1)] = NA
-      # print(paste("Background 0's converted to NA's"))
-
       # new fix - just set world map(usually basin) 0's to NA, less chance of confusion
       raster::values(read_stack[[map_info[map_info[,1] == "world",2][[1]]]])[raster::values(read_stack[[map_info[map_info[,1] == "world",2]]]) == 0] = NA
+      cat("For 'world level map, 0's set to NA.")
+    }
+
+    cat("Trimming NAs.\n")
+    if (raster::nlayers(read_stack) == 1) {
+      read_stack = raster::trim(read_stack[[1]]) #get rid of extra background
+    } else {
+      read_stack = raster::trim(read_stack) #get rid of extra background
     }
 
     # Mask all maps by world level map -----
-    if (!is.null("map_info")) { # if being run inside RHESSysPreprocess.R will always have map_info - just makes funciton more versitile
-      read_stack = raster::mask(read_stack,read_stack[[map_info[map_info[,1] == "world",2][[1]]]])# mask by map used for world level
+    if (!is.null("map_info")) { # if being run inside RHESSysPreprocess.R will always have map_info - just makes function more versatile
+      cat("Masking maps by 'world' layer map.\n")
+      read_stack = raster::mask(read_stack,read_stack[[map_info[map_info[,1] == "world",2][[1]]]], progress = "text")# mask by map used for world level
     }
 
+    # trim NAs again to remove rows/cols that mightve been removed via mask
+    #cat("Trimming NAs after mask.\n")
     if (read_stack@data@nlayers == 1) {
       read_stack = raster::trim(read_stack[[1]]) #get rid of extra background
     } else {
@@ -176,8 +184,10 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
     }
 
     # Check for missing data (within world map mask) - no fix, just an error since I think this will break things if left unchecked
-    if (!is.null("map_info") & sum(is.na(raster::values(read_stack)[!is.na(raster::values(read_stack[[map_info[map_info[,1] == "world",2][[1]]]])),
-                                                                 !colnames(raster::values(read_stack)) %in% map_info[map_info[,1] == "streams",2]])) > 0) {
+    cat("Checking for missing data within bounds of world map.\n")
+    if (!is.null("map_info") &
+        sum(is.na(raster::values(read_stack)[!is.na(raster::values(read_stack[[map_info[map_info[, 1] == "world", 2][[1]]]])),
+                                             !colnames(raster::values(read_stack)) %in% map_info[map_info[, 1] == "streams", 2]])) > 0) {
       # Add in future? - which maps are missing data?
       stop("Missing data within bounds of world level map. Check you input maps.")
     }
