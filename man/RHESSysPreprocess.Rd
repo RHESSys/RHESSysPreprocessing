@@ -20,6 +20,7 @@ RHESSysPreprocess(
   unique_strata_ID = TRUE,
   seq_patch_IDs = FALSE,
   output_patch_map = FALSE,
+  fire_grid_out = FALSE,
   parallel = TRUE,
   make_stream = 4,
   wrapper = TRUE
@@ -66,6 +67,9 @@ for more info on parameters.}
 \item{seq_patch_IDs}{TRUE/FALSE should patch map IDs be overwritten with sequential integers.}
 
 \item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
+
+\item{fire_grid_out}{TRUE/FALSE should the writefire_grids headerless ascii grid outputs of DEM, patch, zone, and hillslope be output. An additional fire grid info
+file will be created specifying the ncol/nrow and other header info. Will use the input name as the base prefix for the grid files.}
 
 \item{parallel}{TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.}

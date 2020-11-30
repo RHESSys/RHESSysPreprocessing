@@ -28,6 +28,8 @@
 #' @param unique_strata_ID Takes input map or value for canopy strata ID and appends either a 1 or 2 dpending on which canopy it is. Defaults to TRUE.
 #' @param seq_patch_IDs TRUE/FALSE should patch map IDs be overwritten with sequential integers.
 #' @param output_patch_map TRUE/FALSE should the new patch map with sequential IDs be output to file.
+#' @param fire_grid_out TRUE/FALSE should the writefire_grids headerless ascii grid outputs of DEM, patch, zone, and hillslope be output. An additional fire grid info
+#' file will be created specifying the ncol/nrow and other header info. Will use the input name as the base prefix for the grid files.
 #' @param parallel TRUE/FALSE flag to build a flowtable for use in the hilllslope parallelized version of RHESSys. Console may output warnings of
 #' automated actions taken to make hillslope parallelization possible, or errors indicating fatal problems in hillslope parallelization.
 #' @param make_stream The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
@@ -54,6 +56,7 @@ RHESSysPreprocess = function(template,
                              unique_strata_ID = TRUE,
                              seq_patch_IDs = FALSE,
                              output_patch_map = FALSE,
+                             fire_grid_out = FALSE,
                              parallel = TRUE,
                              make_stream = 4,
                              wrapper = TRUE) {
@@ -166,5 +169,11 @@ RHESSysPreprocess = function(template,
   #     asp_rule = asprules
   #   )
   # }
+
+  if (fire_grid_out) {
+    cat("Writing fire grid files")
+    write_fire_grids(name = name, template = template, map_dir = typepars, seq_patch_IDs = seq_patch_IDs)
+  }
+
 
 } # end function
