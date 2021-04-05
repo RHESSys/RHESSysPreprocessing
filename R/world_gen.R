@@ -316,7 +316,7 @@ world_gen = function(template,
           for (p in patches) {
             ruleid = unique(levels[(levels[,5] == p & levels[,4] == z & levels[,3] == h & levels[,2] == b),7])
             ruleid = paste0("rule_",ruleid)
-            if (length(ruleid) != 1) {stop("something's wrong with the ruleid")}
+            if (length(ruleid) != 1) {stop("Multiple rule ids found for patch: ",p)}
             asp_index = 1:(length(rulevars[[(ruleid)]]$patch_level_vars[1,]) - 1)
 
             # ----- Patches (non-spatial) -----
