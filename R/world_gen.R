@@ -89,7 +89,13 @@ world_gen = function(template,
   z_map = map_info[map_info[, 1] == "zone", 2]
   p_map = map_info[map_info[, 1] == "patch", 2]
   s_map = map_info[map_info[, 1] == "strata", 2]
-  levels = unname(data.matrix(map_df[c(w_map,b_map,h_map,z_map,p_map,s_map)], length(map_df[p_map]) ))
+  #levels = unname(data.matrix(map_df[c(w_map,b_map,h_map,z_map,p_map,s_map)], length(map_df[p_map])))
+  # if we run into memory issues, re factor this code
+
+  levels = data.matrix(map_df[c(w_map,b_map,h_map,z_map,p_map,s_map)], length(map_df[p_map]))
+  levels = as.data.frame(levels)
+  colnames(levels) = c("w", "b", "h", "z", "p", "s")
+
 
   # -------------------- Aspatial Patch Processing --------------------
   rulevars = NULL
@@ -103,9 +109,9 @@ world_gen = function(template,
     rulevars = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
 
     if (is.data.frame(asp_mapdata)) { # add ruleID to levels matrix
-      levels = cbind(levels,unname(as.matrix(asp_mapdata)))
+      levels = cbind(levels, a = unname(as.matrix(asp_mapdata)))
     } else if (is.numeric(asp_mapdata)) {
-      levels = cbind(levels, rep(asp_mapdata,length(levels[,1])) )
+      levels = cbind(levels, a = rep(asp_mapdata,length(levels[,1])) )
     }
     level_index = c(level_index, length(template_clean)+2) # because rules got added to the levels matrix, this is to prevent them from being aggregated across
   }
@@ -236,6 +242,41 @@ world_gen = function(template,
 
   # -------------------- Write World File --------------------
 
+  # functions for replacing lapplys
+  # basin
+  bfun = function(i) {
+    if (length(statevars[[i]][[1]]) > 1) {
+      var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b ,"x"]
+    } else {var = statevars[[i]][[1]]}
+    varname = template_clean[[i]][1]
+    return(paste("\t",format(var),"\t\t\t",varname,"\n",sep = ""))
+  }
+  #hillslope
+  hfun = function(i) {
+    if (length(statevars[[i]][[1]]) > 1) {
+      var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h ,"x"]
+    } else {var = statevars[[i]][[1]]}
+    varname = template_clean[[i]][1]
+    return(paste("\t\t",format(var),"\t\t\t",varname,"\n",sep = ""))
+  }
+  #zone
+  zfun = function(i) {
+    if (length(statevars[[i]][[1]]) > 1) {
+      var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h & statevars[[i]][[1]][4] == z ,"x"]
+    } else {var = statevars[[i]][[1]]}
+    varname = template_clean[[i]][1]
+    return(paste("\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""))
+  }
+  #patch
+  pfun = function(i) {
+
+  }
+  #stratum
+  sfun = function(i) {
+
+  }
+
+
   print("Writing worldfile",quote = FALSE)
   stratum = 1:template_clean[[level_index[6]]][3] # count of stratum
 
@@ -250,80 +291,90 @@ world_gen = function(template,
 
   # ----- World -----
   # No state variables at world level
-  world = unique(levels[,1])
+  world = unique(levels$w)
   writeChar(paste(world,"\t\t\t","world_ID\n",sep = ""),con = wcon, eos = NULL)
-  writeChar(paste(length(unique(levels[,2])),"\t\t\t","num_basins\n",sep = ""),con = wcon,eos = NULL)
-  basin = unique(levels[,2])
+  writeChar(paste(length(unique(levels$b)),"\t\t\t","num_basins\n",sep = ""),con = wcon,eos = NULL)
+  basin = unique(levels$b)
 
   # ----- Basin -----
   for (b in basin) {
     writeChar(paste("\t",b,"\t\t\t","basin_ID\n",sep = ""),con = wcon,eos = NULL)
 
-    for (i in (level_index[2] + 1):(level_index[3] - 1)) {
-      if (length(statevars[[i]][[1]]) > 1) {
-        var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b ,"x"]
-      } else {var = statevars[[i]][[1]]}
-      varname = template_clean[[i]][1]
-      writeChar(paste("\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-    }
-    hillslopes = unique(levels[levels[,2] == b, 3])
+    # for (i in (level_index[2] + 1):(level_index[3] - 1)) {
+    #   if (length(statevars[[i]][[1]]) > 1) {
+    #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b ,"x"]
+    #   } else {var = statevars[[i]][[1]]}
+    #   varname = template_clean[[i]][1]
+    #   writeChar(paste("\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
+    # }
+    bout = unlist(lapply((level_index[2] + 1):(level_index[3] - 1), FUN = bfun))
+    writeChar(bout,con = wcon,eos = NULL)
+
+    hillslopes = unique(levels[levels$b == b, "h"])
     writeChar(paste("\t",length(hillslopes),"\t\t\t","num_hillslopes\n",sep = ""),con = wcon,eos = NULL)
 
     # ----- Hillslope -----
     for (h in hillslopes) {
-
       # Iterate progress bar
       progress = progress + 1
       setTxtProgressBar(pb,progress/length(unique(levels[,3])))
 
       writeChar(paste("\t\t",h,"\t\t\t","hillslope_ID\n",sep = ""),con = wcon,eos = NULL)
 
-      for (i in (level_index[3] + 1):(level_index[4] - 1)) {
-        if (length(statevars[[i]][[1]]) > 1) {
-          var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h ,"x"]
-        } else {var = statevars[[i]][[1]]}
-        varname = template_clean[[i]][1]
-        writeChar(paste("\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-      }
-      zones = unique(levels[levels[,3] == h & levels[,2] == b, 4])
+      # for (i in (level_index[3] + 1):(level_index[4] - 1)) {
+      #   if (length(statevars[[i]][[1]]) > 1) {
+      #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h ,"x"]
+      #   } else {var = statevars[[i]][[1]]}
+      #   varname = template_clean[[i]][1]
+      #   writeChar(paste("\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
+      # }
+      hout = unlist(lapply((level_index[3] + 1):(level_index[4] - 1), FUN = hfun))
+      writeChar(hout,con = wcon,eos = NULL)
+
+      zones = unique(levels[levels$h == h & levels$b == b, "z"])
       writeChar(paste("\t\t",length(zones),"\t\t\t","num_zones\n",sep = ""),con = wcon,eos = NULL)
 
       # ----- Zone -----
       for (z in zones) {
         writeChar(paste("\t\t\t",z,"\t\t\t","zone_ID\n",sep = ""),con = wcon,eos = NULL)
 
-        for (i in (level_index[4] + 1):(level_index[5] - 1)) {
-          if (length(statevars[[i]][[1]]) > 1) {
-            var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h & statevars[[i]][[1]][4] == z ,"x"]
-          } else {var = statevars[[i]][[1]]}
-          varname = template_clean[[i]][1]
-          writeChar(paste("\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-        }
+        # for (i in (level_index[4] + 1):(level_index[5] - 1)) {
+        #   if (length(statevars[[i]][[1]]) > 1) {
+        #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h & statevars[[i]][[1]][4] == z ,"x"]
+        #   } else {var = statevars[[i]][[1]]}
+        #   varname = template_clean[[i]][1]
+        #   writeChar(paste("\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
+        # }
+        zout = unlist(lapply((level_index[4] + 1):(level_index[5] - 1), FUN = zfun))
+        writeChar(zout,con = wcon,eos = NULL)
 
         #---------- Start multiscale (aspatial) patches and stratum ----------
         if (asp_check) {
-          patches = unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b, 5])
+          patches = unique(levels[levels$z == z & levels$h == h & levels$b == b, "p"])
           asp_ct = sapply(rulevars, FUN = function(x) ncol(x[[1]]) - 1)
           if (length(patches) == 1 & length(asp_ct) == 1){
             total_patches = length(patches) * asp_ct
           } else {
-            total_patches = sum(asp_ct[unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b,])[, 7]])
+            total_patches = sum(asp_ct[unique(levels[levels$z == z & levels$h == h & levels$b == b,])[,"a"]])
           }
 
           writeChar(paste("\t\t\t",total_patches,"\t\t\t","num_patches\n",sep = ""),con = wcon,eos = NULL)
 
           # ----- Patches (spatial) -----
           for (p in patches) {
-            ruleid = unique(levels[(levels[,5] == p & levels[,4] == z & levels[,3] == h & levels[,2] == b),7])
-            ruleid = paste0("rule_",ruleid)
+            ruleid = paste0("rule_", unique(levels[(levels$p == p & levels$z == z & levels$h == h & levels$b == b), "a"]))
+
             if (length(ruleid) != 1) {stop("Multiple rule ids found for patch: ",p)}
             asp_index = 1:(length(rulevars[[(ruleid)]]$patch_level_vars[1,]) - 1)
 
             # ----- Patches (non-spatial) -----
             for (asp in asp_index) {
               pnum = (p*100) + asp # adjust patch numbers here - adds two 0's, ie: patch 1 becomes patches 101, 102, etc.
-              writeChar(paste("\t\t\t\t",pnum,"\t\t\t","patch_ID\n",sep = ""),con = wcon,eos = NULL)
-              writeChar(paste("\t\t\t\t",p,"\t\t\t","family_ID\n",sep = ""),con = wcon,eos = NULL)
+
+              writeChar(c(paste("\t\t\t\t",pnum,"\t\t\t","patch_ID\n",sep = ""),
+                          paste("\t\t\t\t",p,"\t\t\t","family_ID\n",sep = "")),
+                        con = wcon,eos = NULL)
+              #writeChar(paste("\t\t\t\t",p,"\t\t\t","family_ID\n",sep = ""),con = wcon,eos = NULL)
 
               asp_p_vars = which(!rulevars[[ruleid]]$patch_level_vars[,1] %in% var_names[var_index]) # get vars from aspatial not included in template
 
@@ -332,7 +383,9 @@ world_gen = function(template,
                 #var = as.numeric(rulevars[[ruleid]]$patch_level_vars[i,asp + 1])
                 var = rulevars[[ruleid]]$patch_level_vars[i,asp + 1]
                 varname = rulevars[[ruleid]]$patch_level_vars[i,1]
-                if (is.na(var)) {stop(paste(varname,"cannot be NA since a default isn't specified in the template, please set explicitly in your rules file."))}
+                if (is.na(var)) {
+                  stop(paste(varname,"cannot be NA since a default isn't specified in the template, please set explicitly in your rules file."))
+                }
                 writeChar(paste("\t\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
               }
 
