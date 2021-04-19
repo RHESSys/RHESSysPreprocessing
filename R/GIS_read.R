@@ -185,11 +185,17 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
 
     # Check for missing data (within world map mask) - no fix, just an error since I think this will break things if left unchecked
     cat("Checking for missing data within bounds of world map.\n")
-    if (!is.null("map_info") &
-        sum(is.na(raster::values(read_stack)[!is.na(raster::values(read_stack[[map_info[map_info[, 1] == "world", 2][[1]]]])),
-                                             !colnames(raster::values(read_stack)) %in% map_info[map_info[, 1] == "streams", 2]])) > 0) {
-      # Add in future? - which maps are missing data?
-      stop("Missing data within bounds of world level map. Check you input maps.")
+    if (!is.null("map_info")) {
+      wrld_vals = !is.na(raster::values(read_stack[[map_info[map_info[, 1] == "world", 2][[1]]]]))
+      NAs_in_wrld = lapply(as.data.frame(raster::values(read_stack)), function(X) {sum(is.na( X[wrld_vals]))})
+      if ("streams" %in% map_info[, 1]) {
+        NAs_in_wrld[[map_info[map_info[, 1] == "streams", 2]]] = NULL
+      }
+      if (any(NAs_in_wrld > 0) ) {
+        cat("One or more maps have NAs within the bounds of the world map, see maps and counts of NAs below:\n")
+        print(NAs_in_wrld[NAs_in_wrld > 0])
+        stop("See above and check your input maps.")
+      }
     }
 
     # Convert maps to SpatialGridDataFrame since world_gen.R expects that format

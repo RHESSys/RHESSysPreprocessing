@@ -36,6 +36,18 @@ spatial_input_gen = function(name,
 
   warning("Work in progress - May not work, output crs/proj is weird, optional args/fucntionality is broken, probably best to run line by line")
 
+  # maybe this will help
+  library(rgrass7)
+
+  basin = NULL
+  patch = FALSE
+  define_watershed = FALSE
+  easting = NULL
+  northing = NULL
+  gisDbase = NULL
+  location = NULL
+  mapset = NULL
+
   # check and convert file paths for args
 
 
@@ -74,7 +86,7 @@ spatial_input_gen = function(name,
   }
 
   # --- checking env and stuff ---
-  # gmeta()
+  # rgrass7::gmeta()
   # rgrass7::execGRASS(cmd = "g.mapset", flags = "p")
   # rgrass7::execGRASS(cmd = "g.mapset", flags = "l")
   # rgrass7::execGRASS(cmd = "g.list", flags = "p", type = "raster")
