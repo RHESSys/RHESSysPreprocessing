@@ -20,17 +20,18 @@
 #' @importFrom utils setTxtProgressBar
 
 make_flow_list <- function(raw_patch_data,
-                                raw_patch_elevation_data,
-                                raw_hill_data,
-                                raw_basin_data,
-                                raw_zone_data,
-                                raw_slope_data,
-                                raw_stream_data,
-                                raw_road_data,
-                                cell_length,
-                                road_width = NULL,
-                                parallel,
-                                make_stream) {
+                           raw_patch_elevation_data,
+                           raw_hill_data,
+                           raw_basin_data,
+                           raw_zone_data,
+                           raw_slope_data,
+                           raw_stream_data,
+                           raw_road_data,
+                           cell_length,
+                           road_width = NULL,
+                           parallel,
+                           make_stream,
+                           skip_hillslope_check) {
 
   # -------------------- Error checking and NULL handling --------------------
   if (cell_length <= 0) {stop("Cell length is <=0")}
@@ -258,8 +259,7 @@ make_flow_list <- function(raw_patch_data,
     }
 
 
-
-    find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill) {
+    find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill, itr_ct = NULL, itr_max = 10000) {
       # add start to found, only for first itr tho
       if (is.null(history)) {
         found = start
@@ -268,6 +268,7 @@ make_flow_list <- function(raw_patch_data,
       history = c(history, start)
       # find the neighbors
       neighbors = names(patch_borders[[start]])[-1][names(patch_borders[[start]])[-1] %in% flw_struct[flw_struct$Hill == hill, "Number"]]
+      neighbors = as.numeric(neighbors)
       # update the found vector to include those neighbors
       found = c(found, neighbors)
       # remove the found from missing
@@ -280,62 +281,81 @@ make_flow_list <- function(raw_patch_data,
       if (all(found %in% history)) {
         return(missing)
       }
+
+      if (!is.null(itr_ct)) {
+        itr_ct = itr_ct + 1
+        if (itr_ct == itr_max) {
+          cat("Reached iteration limit of ",itr_max)
+          return(list(missing, found, history, start))
+        }
+      }
+
       # if we haven't found everything, keep iterating through found patches not in the history
-      next_patch = as.numeric(found[!found %in% history][1])
+      opts = as.numeric(found[!found %in% history])
+      next_patch = opts[round(runif(1,min = 1, max = length(opts)))]
+      #next_patch = as.numeric(found[!found %in% history][1])
+
       find_connected(
         patch_borders = patch_borders,
         start = next_patch,
         history = history,
         found = found,
         missing = missing,
-        hill = hill
+        hill = hill,
+        itr_ct = itr_ct,
+        itr_max = itr_max
       )
     }
 
-    # check for segmented hillslopes - this is going to be so slow but oh well
-    cat("Checking for segmented hillslopes")
-    segmented_hills = NULL
-    segmented_patch_ct = NULL
-    segmented_patch_list = list()
+    if (!skip_hillslope_check) {
+      # check for segmented hillslopes - this is going to be so slow but oh well
+      cat("Checking for segmented hillslopes")
+      segmented_hills = NULL
+      segmented_patch_ct = NULL
+      segmented_patch_list = list()
 
-    pb = txtProgressBar(min = 0,max = length(unique(flw_struct$Hill)),style = 3)
-    ct = 0
+      pb = txtProgressBar(min = 0,max = length(unique(flw_struct$Hill)),style = 3)
+      ct = 0
 
-    for (i in unique(flw_struct$Hill)) {
-      ct = ct + 1
-      setTxtProgressBar(pb,ct)
-      # start from outlet
-      min_patch = flw_struct[flw_struct$Hill == i,][min_hill_patch[min_hill_patch$hillID == i, "patch_ind"],]
-      all_patches = flw_struct[flw_struct$Hill == i, "Number"]
+      # for testing:
+      i = unique(flw_struct$Hill)[4]
 
-      missing = find_connected(
-        patch_borders = patch_borders,
-        start = min_patch$Number,
-        history = NULL,
-        found = NULL,
-        missing = all_patches,
-        hill = i
-      )
+      for (i in unique(flw_struct$Hill)) {
+        ct = ct + 1
+        setTxtProgressBar(pb,ct)
+        # start from outlet
+        min_patch = flw_struct[flw_struct$Hill == i,][min_hill_patch[min_hill_patch$hillID == i, "patch_ind"],]
+        all_patches = flw_struct[flw_struct$Hill == i, "Number"]
 
-      if (!is.null(missing)) {
-
-        segmented_hills = c(segmented_hills, i)
-        segmented_patch_ct = c(segmented_patch_ct, length(missing))
-        segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
-        segmented_patch_list[[as.character(i)]] = missing
-
-        warning(
-          "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
-          "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
-          "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
+        missing = find_connected(
+          patch_borders = patch_borders,
+          start = min_patch$Number,
+          history = NULL,
+          found = NULL,
+          missing = all_patches,
+          hill = i,
+          itr_ct = 0,
+          itr_max = length(all_patches)
         )
-        print(segmented_df)
-        #error("")
 
-      }
+        if (!is.null(missing)) {
+          segmented_hills = c(segmented_hills, i)
+          segmented_patch_ct = c(segmented_patch_ct, length(missing))
+          segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
+          segmented_patch_list[[as.character(i)]] = missing
+          warning(
+            "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
+            "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
+            "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
+          )
+          print(segmented_df)
+          #error("")
 
-    } # end for segmented hills
-    close(pb)
+        }
+
+      } # end for segmented hills
+      close(pb)
+    }
 
 
   } # end parallel if

@@ -5,7 +5,7 @@
 #' @param readin readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
 #' used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
 #' Streams map, and other optional maps, still need to be specified.
-#' @param asp_list List of aspatial structure and inputs. Used internally
+#' @param asp_rules List of aspatial structure and inputs. Also can be path to rules file - must be used along with template input.
 #' @param road_width >0, defaults to 1.
 #' @inheritParams RHESSysPreprocess
 #' @author Will Burke
@@ -15,7 +15,7 @@ CreateFlownet = function(flownet_name,
                          readin = NULL,
                          type = "raster",
                          typepars = NULL,
-                         asp_list = NULL,
+                         asp_rules = NULL,
                          streams = NULL,
                          overwrite = FALSE,
                          roads = NULL,
@@ -24,6 +24,7 @@ CreateFlownet = function(flownet_name,
                          roofs = NULL,
                          parallel = TRUE,
                          make_stream = 4,
+                         skip_hillslope_check = FALSE,
                          wrapper = FALSE) {
 
   # ------------------------------ Read and check inputs ------------------------------
@@ -40,7 +41,9 @@ CreateFlownet = function(flownet_name,
 
   if (!wrapper & is.character(readin)) { #if run outside of rhessyspreprocess.R, and if readin is character. readin is the template (and path)
     template_list = template_read(readin)
-    map_info = template_list[[5]]
+    template_clean = template_list[[1]] # template in list form
+    var_names = template_list[[2]] # names of template vars
+    map_info = template_list[[5]] # tables of maps and their inputs/names in the template
     cfmaps = rbind(map_info,c("cell_length","none"), c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
   } else if (wrapper | (!wrapper & is.matrix(readin))) { # map info is passsed directly from world gen - either in wrapper or outside of wrapper and readin is matrix
     cfmaps = readin
@@ -113,6 +116,18 @@ CreateFlownet = function(flownet_name,
   raw_impervious_data = NULL
   if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
+  # read aspatial rules if needed
+  if (!is.null(asp_rules) && is.character(asp_rules)) {
+    asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
+    if (suppressWarnings(any(is.na(as.numeric(asp_map))))) { # if it's a map
+      asp_map = gsub(".tif|.tiff","",asp_map)
+      asp_mapdata = as.data.frame(readmap)[asp_map]
+    } else if (suppressWarnings(all(!is.na(as.numeric(asp_map))))) { # if is a single number
+      asp_mapdata = as.numeric(asp_map)
+    }
+    asp_rules = aspatial_patches(asprules = asp_rules, asp_mapdata = asp_mapdata)
+  }
+
   # ------------------------------ Make flownet list ------------------------------
   cat("Building flowtable")
   CF1 = make_flow_list(
@@ -127,10 +142,11 @@ CreateFlownet = function(flownet_name,
     road_width = road_width,
     cell_length = cell_length,
     parallel = parallel,
-    make_stream = make_stream)
+    make_stream = make_stream,
+    skip_hillslope_check = skip_hillslope_check)
 
   # ------------------------------ Multiscale routing/aspatial patches ------------------------------
-  if (!is.null(asp_list)) {
+  if (!is.null(asp_rules)) {
     if ("asp_rule" %in% notamap) {
       map_list[["asp_rule"]] = raw_basin_data
       map_list[["asp_rule"]][!is.na(map_list[["asp_rule"]])] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
@@ -138,7 +154,7 @@ CreateFlownet = function(flownet_name,
       cfmaps[cfmaps[,1] == "asp_rule", 2] = "asp_rule"
     }
 
-    CF1 = multiscale_flow(CF1 = CF1, map_list = map_list, cfmaps = cfmaps, asp_list = asp_list)
+    CF1 = multiscale_flow(CF1 = CF1, map_list = map_list, cfmaps = cfmaps, asp_list = asp_rules)
   }
 
   # ---------- Flownet list to flow table file ----------

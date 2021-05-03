@@ -99,8 +99,14 @@ GIS_read = function(maps_in, type, typepars, map_info = NULL, seq_patch_IDs = FA
       if (length(file) == 0) { # if there were no matches
         stop(paste("No file named:",name,"at path:",typepars))
       }
+      if (length(file) > 1) { # ignore .xml files
+        file = file[!grepl(".xml$",file)]
+      }
       if (length(file) > 1) { # if multiple files, use tif preferentially
         file = file[grep(".tif$",file)]
+        if (length(file) > 1) {
+          file = file[grep(".tiff$",file)]
+        }
       }
       if (length(file) > 1) { # if STILL multiple files, can only be one file for each name in maps_in
         stop(paste("multiple files containing name:",name,"check directory:",typepars))
