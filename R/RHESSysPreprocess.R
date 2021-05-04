@@ -127,7 +127,7 @@ RHESSysPreprocess = function(template,
                             asprules = asprules)
 
   readin = world_gen_out[[1]]
-  asp_list = world_gen_out[[2]]
+  asp_rules = world_gen_out[[2]]
 
   # ---------- Run CreateFlownet ----------
   cat("Begin CreateFlownet.R")
@@ -145,7 +145,7 @@ RHESSysPreprocess = function(template,
                 readin = readin,
                 type = type,
                 typepars = typepars,
-                asp_list = asp_list,
+                asp_rules = asp_rules,
                 streams = streams,
                 overwrite = overwrite,
                 roads = roads,

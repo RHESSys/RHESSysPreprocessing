@@ -154,6 +154,11 @@ world_gen = function(template,
   } # end loop through n_basestations
 
   # -------------------- Process Template + Maps --------------------
+  # mode for aggregating by mode
+  mode_fun = function(x) {
+    ux <- unique(x)
+    ux[which.max(tabulate(match(x, ux)))]
+  }
   # Build list based on operations called for by template
   statevars = vector("list",length(template_clean))
 
@@ -206,14 +211,7 @@ world_gen = function(template,
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
       } else if (template_clean[[i]][2] == "mode") { #mode
         maptmp = as.vector(t(map_df[template_clean[[i]][2 + s - s2]]))
-        statevars[[i]][[s]] = aggregate(
-          maptmp,
-          by = level_agg,
-          FUN = function(x) {
-            ux <- unique(x)
-            ux[which.max(tabulate(match(x, ux)))]
-          }
-        )
+        statevars[[i]][[s]] = aggregate( maptmp, by = level_agg, FUN = mode_fun)
       } else if (template_clean[[i]][2] == "eqn") { # only for horizons old version -- use normal mean in future
         maptmp = as.vector(t(map_df[template_clean[[i]][5]]))
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
