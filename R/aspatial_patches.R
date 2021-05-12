@@ -48,7 +48,7 @@ aspatial_patches = function(asprules,asp_mapdata) {
   # strata data frames (num = patch ct) - rows are statevars, cols are strata
 
   # ---------- build rulevars based on rules and map data ----------
-  map_ids = unique(asp_mapdata)[[1]] # get rule IDs from map/input
+  map_ids = unique(asp_mapdata) # get rule IDs from map/input
   map_id_tags = paste("rule_",map_ids,sep = "") # all map IDs concated w tags for referencing/reading in code
 
   asp_vars = as.list(rep(0,length(map_ids))) # highest level list of the different rules

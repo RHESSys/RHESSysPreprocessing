@@ -96,6 +96,11 @@ world_gen = function(template,
   levels = as.data.frame(levels)
   colnames(levels) = c("w", "b", "h", "z", "p", "s")
 
+  # mode for aggregating by mode
+  mode_fun = function(x) {
+    ux <- unique(x)
+    ux[which.max(tabulate(match(x, ux)))]
+  }
 
   # -------------------- Aspatial Patch Processing --------------------
   rulevars = NULL
@@ -108,8 +113,12 @@ world_gen = function(template,
     }
     rulevars = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
 
-    if (is.data.frame(asp_mapdata)) { # add ruleID to levels matrix
-      levels = cbind(levels, a = unname(as.matrix(asp_mapdata)))
+    if (is.data.frame(asp_mapdata)) { # add ruleID to levels df
+      asp_level = aggregate(asp_mapdata$asprule.tiff, by = as.list(levels), FUN = mode_fun)
+      levels = merge(levels, asp_level[,c("h", "z", "p", "x")], by = c("h", "z", "p"), sort = F)
+      levels = levels[c("w", "b", "h", "z", "p", "s", "x")]
+      names(levels)[7] = "a"
+      #levels = cbind(levels, a = unname(as.matrix(asp_mapdata)))
     } else if (is.numeric(asp_mapdata)) {
       levels = cbind(levels, a = rep(asp_mapdata,length(levels[,1])) )
     }
@@ -154,11 +163,7 @@ world_gen = function(template,
   } # end loop through n_basestations
 
   # -------------------- Process Template + Maps --------------------
-  # mode for aggregating by mode
-  mode_fun = function(x) {
-    ux <- unique(x)
-    ux[which.max(tabulate(match(x, ux)))]
-  }
+
   # Build list based on operations called for by template
   statevars = vector("list",length(template_clean))
 

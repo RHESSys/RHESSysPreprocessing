@@ -122,10 +122,61 @@ CreateFlownet = function(flownet_name,
     if (suppressWarnings(any(is.na(as.numeric(asp_map))))) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
       asp_mapdata = as.data.frame(readmap)[asp_map]
+
+      # --- doing manipulation of the asp map if needed here ---
+      if (template_clean[[which(var_names == "asp_rule")]][2] == "mode" ) {
+
+        # mode for aggregating by mode
+        mode_fun = function(x) {
+          ux <- unique(x)
+          ux[which.max(tabulate(match(x, ux)))]
+        }
+
+        # fun to check if rules are all unique per patch (kinda slow but oh well) -----
+        check_rules = function(patches, asp_rules) {
+          patches_u = unique(patches[!is.na(patches)])
+          patches_i = lapply(patches_u, function(x, y) {which(x == y)}, patches)
+          outrules = lapply(patches_i, function(x, y) {y[x]}, asp_rules)
+          lens = sapply(outrules, function(x) {length(unique(x))})
+          lens_i = which(unlist(lens) > 1)
+          if (length(lens_i) > 0) {
+            cat("There are patches with multiple multiscale rules:\n")
+            out = data.frame(patch = patches[lens_i], rules = sapply(outrules[lens_i], function(x) {paste(unique(x), collapse=", ") }) )
+            return(out)
+          } else {
+            return(NULL)
+          }
+        }
+
+        level_names = unname(c(map_info[map_info[, 1] == "basin", 2],
+                               map_info[map_info[, 1] == "hillslope", 2],
+                               map_info[map_info[, 1] == "zone", 2],
+                               map_info[map_info[, 1] == "patch", 2],
+                               map_info[map_info[, 1] == "strata", 2]))
+        level_names = unique(gsub(".tiff|.tif|.asc","",level_names))
+
+        if (length(readmap@data[,1]) == 1) {
+          map_df = as.data.frame(readmap@data) # works for 1 patch world
+        } else {
+          map_df = as.data.frame(readmap) #make data frame for ease of use
+        }
+
+        asp_maps = aggregate(map_df$asprule, by = map_df[level_names], FUN = mode_fun, simplify = T)
+        names(asp_maps)[which(names(asp_maps) == "x")] = "asprule"
+
+        rules_out = check_rules(patches = asp_maps$pch_30m1000, asp_rules = asp_maps$asprule)
+        if (!is.null(rules_out)) {
+          print(rules_out)
+          stop("Mode of rules was attempted but there are still patches with multiple rules. Check input maps.")
+        }
+
+        asp_mapdata = asp_maps$asprule
+      }
+
     } else if (suppressWarnings(all(!is.na(as.numeric(asp_map))))) { # if is a single number
       asp_mapdata = as.numeric(asp_map)
     }
-    asp_rules = aspatial_patches(asprules = asp_rules, asp_mapdata = asp_mapdata)
+    asp_list = aspatial_patches(asprules = asp_rules, asp_mapdata = asp_mapdata)
   }
 
   # ------------------------------ Make flownet list ------------------------------
@@ -154,7 +205,7 @@ CreateFlownet = function(flownet_name,
       cfmaps[cfmaps[,1] == "asp_rule", 2] = "asp_rule"
     }
 
-    CF1 = multiscale_flow(CF1 = CF1, map_list = map_list, cfmaps = cfmaps, asp_list = asp_rules)
+    CF1 = multiscale_flow(CF1 = CF1, asp_maps = asp_maps, cfmaps = cfmaps, asp_list = asp_list)
   }
 
   # ---------- Flownet list to flow table file ----------

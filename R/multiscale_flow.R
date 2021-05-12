@@ -7,18 +7,23 @@
 #' @param asp_list List of aspatial rules
 # Will Burke 1/16/19
 
-multiscale_flow = function(CF1, map_list, cfmaps, asp_list) {
+multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
+
+  #nbr 121
+  #nbr patch 11955
+  # no times nbr asp ct is empty
+  #which(lapply(CF1,"[[", 9) == 15660)
 
   # functions for applys
   apply_patches = function(CFp) {
     id = paste0("rule_", unique(asp_map[which(raw_patch_data == CFp$PatchID)]))
     asp_count = ncol(rulevars[[id]]$patch_level_vars[1, ]) - 1 # get number of aspatial patches for current patch
     asp = c(1:asp_count)
-    CFasp = lapply(asp, add_asp,CFp)
+    CFasp = lapply(asp, add_asp,CFp, id)
     unlist(CFasp,recursive = F)
     return(CFasp)
   }
-  add_asp = function(asp, CFp) {
+  add_asp = function(asp, CFp, id) {
     CFasp = CFp
     CFasp$PatchID = CFp$PatchID * 100 + asp # aspatial patch ID is old patch ID *100 + aspatial number
     CFasp$Number = CFp$Number * 100 + asp # same modification to number
@@ -48,11 +53,11 @@ multiscale_flow = function(CF1, map_list, cfmaps, asp_list) {
   cat("Creating multiscale flowtable - this may take a moment with many patches")
 
   # ----- Variable setup -----
-  asp_map = map_list[[cfmaps[cfmaps[, 1] == "asp_rule", 2]]] # matrix of aspatial rules
+  asp_map = asp_maps[[cfmaps[cfmaps[, 1] == "asp_rule", 2]]] # matrix of aspatial rules
 
   patch_ID = unlist(lapply(CF1, "[[", 9)) # patch IDs from cf1
   numbers = unlist(lapply(CF1, "[[", 1)) # flow list numbers
-  raw_patch_data = map_list[[cfmaps[cfmaps[, 1] == "patch", 2]]] # get patch matrix inside the function
+  raw_patch_data = asp_maps[[cfmaps[cfmaps[, 1] == "patch", 2]]] # get patch matrix inside the function
   rulevars = asp_list # get rules - state variable overrides
   CF2 = list() # empty list for new flow list
 

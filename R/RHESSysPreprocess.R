@@ -153,7 +153,8 @@ RHESSysPreprocess = function(template,
                 roofs = roofs,
                 wrapper = wrapper,
                 parallel = parallel,
-                make_stream = make_stream)
+                make_stream = make_stream,
+                skip_hillslope_check = skip_hillslope_check)
 
   # ---------- Run build_meta ----------
   # if (meta) {
