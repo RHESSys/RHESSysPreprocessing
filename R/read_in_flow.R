@@ -44,6 +44,15 @@ read_in_flow <- function(input_file, df = FALSE) {
   nbr_p <- split(neighbors$Number, f = n_ind2) # neighbor numbers (NOT PATCH NUMBERS)
   nbr_g <- split(neighbors$Gamma_i, f = n_ind2) # gammas
 
+  # Identify patches with no neighbors and add them to neighbors lists
+  no_neighbors <- flw_df$Number[!flw_df$Number %in% unique(n_ind2)]
+  for (i in no_neighbors){
+    nbr_p <- append(nbr_p, list(vector(mode="numeric", length=0)), after = i-1)  # To match the syntax in make_flow_list, patches with no neighbors need be numeric(0)
+    names(nbr_p)[i] <- i
+    nbr_g <- append(nbr_g, list(vector(mode="numeric", length=0)), after = i-1)  # To match the syntax in make_flow_list, patches with no neighbors need be numeric(0)
+    names(nbr_g)[i] <- i
+  }
+  
   list_append <- function(X, Y, Z) { # to append to the list, but keep the appended vector together, and not split those elements up
     X[[Z]] <- Y
     return(X)
