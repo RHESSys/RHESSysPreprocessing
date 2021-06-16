@@ -114,7 +114,7 @@ world_gen = function(template,
     rulevars = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
 
     if (is.data.frame(asp_mapdata)) { # add ruleID to levels df
-      asp_level = aggregate(asp_mapdata$asprule.tiff, by = as.list(levels), FUN = mode_fun)
+      asp_level = aggregate(asp_mapdata[[1]] , by = as.list(levels), FUN = mode_fun)
       levels = merge(levels, asp_level[,c("h", "z", "p", "x")], by = c("h", "z", "p"), sort = F)
       levels = levels[c("w", "b", "h", "z", "p", "s", "x")]
       names(levels)[7] = "a"

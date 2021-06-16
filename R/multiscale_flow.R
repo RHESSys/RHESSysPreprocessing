@@ -2,12 +2,12 @@
 #'
 #' Modifies an existing flowtable (R list) to work with multisacle routing.
 #' @param CF1 Flowtable list object created from make_flow_list
-#' @param map_list List containing input maps as matrices
-#' @param cfmaps Table of map types and file names
+#' @param asp_map Map of the aspatial rules
+#' @param patch_map Map of the patches
 #' @param asp_list List of aspatial rules
 # Will Burke 1/16/19
 
-multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
+multiscale_flow = function(CF1, asp_map, patch_map, asp_list) {
 
   #nbr 121
   #nbr patch 11955
@@ -53,11 +53,9 @@ multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
   cat("Creating multiscale flowtable - this may take a moment with many patches")
 
   # ----- Variable setup -----
-  asp_map = asp_maps[[cfmaps[cfmaps[, 1] == "asp_rule", 2]]] # matrix of aspatial rules
-
   patch_ID = unlist(lapply(CF1, "[[", 9)) # patch IDs from cf1
   numbers = unlist(lapply(CF1, "[[", 1)) # flow list numbers
-  raw_patch_data = asp_maps[[cfmaps[cfmaps[, 1] == "patch", 2]]] # get patch matrix inside the function
+  raw_patch_data = patch_map
   rulevars = asp_list # get rules - state variable overrides
   CF2 = list() # empty list for new flow list
 

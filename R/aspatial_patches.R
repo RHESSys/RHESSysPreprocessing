@@ -3,7 +3,7 @@
 #' @param asp_mapdata map data or value, indicating the rule IDs being used
 #' @author Will Burke
 
-aspatial_patches = function(asprules,asp_mapdata) {
+aspatial_patches = function(asprules, asp_mapdata) {
 
   # some functions
   # splits a vector up at a specific character
@@ -49,7 +49,8 @@ aspatial_patches = function(asprules,asp_mapdata) {
 
   # ---------- build rulevars based on rules and map data ----------
   map_ids = unique(asp_mapdata) # get rule IDs from map/input
-  map_id_tags = paste("rule_",map_ids,sep = "") # all map IDs concated w tags for referencing/reading in code
+  if (is.list(map_ids)) {map_ids = unlist(map_ids)}
+  map_id_tags = paste0("rule_", as.numeric(map_ids)) # all map IDs concated w tags for referencing/reading in code
 
   asp_vars = as.list(rep(0,length(map_ids))) # highest level list of the different rules
   # strata_index = as.list(rep(0,length(map_ids))) # get rid of in this version i think

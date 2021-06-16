@@ -5,7 +5,7 @@
 #' @param readin readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
 #' used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
 #' Streams map, and other optional maps, still need to be specified.
-#' @param asp_rules List of aspatial structure and inputs. Also can be path to rules file - must be used along with template input.
+#' @param asprules List of aspatial structure and inputs. Also can be path to rules file - must be used along with template input.
 #' @param road_width >0, defaults to 1.
 #' @inheritParams RHESSysPreprocess
 #' @author Will Burke
@@ -13,9 +13,10 @@
 
 CreateFlownet = function(flownet_name,
                          readin = NULL,
+                         template = NULL,
                          type = "raster",
                          typepars = NULL,
-                         asp_rules = NULL,
+                         asprules = NULL,
                          streams = NULL,
                          overwrite = FALSE,
                          roads = NULL,
@@ -39,11 +40,12 @@ CreateFlownet = function(flownet_name,
   if (!is.logical(overwrite)) {stop("overwrite must be logical")} # check overwrite inputs
   if (file.exists(flownet_name) & overwrite == FALSE) {stop(noquote(paste("Flowtable",flownet_name,"already exists.")))}
 
+  template_list = template_read(template)
+  template_clean = template_list[[1]] # template in list form
+  var_names = template_list[[2]] # names of template vars
+  map_info = template_list[[5]] # tables of maps and their inputs/names in the template
+
   if (!wrapper & is.character(readin)) { #if run outside of rhessyspreprocess.R, and if readin is character. readin is the template (and path)
-    template_list = template_read(readin)
-    template_clean = template_list[[1]] # template in list form
-    var_names = template_list[[2]] # names of template vars
-    map_info = template_list[[5]] # tables of maps and their inputs/names in the template
     cfmaps = rbind(map_info,c("cell_length","none"), c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
   } else if (wrapper | (!wrapper & is.matrix(readin))) { # map info is passsed directly from world gen - either in wrapper or outside of wrapper and readin is matrix
     cfmaps = readin
@@ -116,22 +118,28 @@ CreateFlownet = function(flownet_name,
   raw_impervious_data = NULL
   if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
+  # TODO - this should get cleaned up eventually - there's at least 2 different versions of the maps being used
+  if (length(readmap@data[,1]) == 1) {
+    map_df = as.data.frame(readmap@data) # works for 1 patch world
+  } else {
+    map_df = as.data.frame(readmap) #make data frame for ease of use
+  }
+
   # read aspatial rules if needed
-  if (!is.null(asp_rules) && is.character(asp_rules)) {
+  if (!is.null(asprules)) {
     asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
-    if (suppressWarnings(any(is.na(as.numeric(asp_map))))) { # if it's a map
+
+    if (!"asp_rule" %in% notamap) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
       asp_mapdata = as.data.frame(readmap)[asp_map]
 
       # --- doing manipulation of the asp map if needed here ---
-      if (template_clean[[which(var_names == "asp_rule")]][2] == "mode" ) {
-
+      if (template_clean[[which(var_names == "asp_rule")]][2] == "mode") {
         # mode for aggregating by mode
         mode_fun = function(x) {
           ux <- unique(x)
           ux[which.max(tabulate(match(x, ux)))]
         }
-
         # fun to check if rules are all unique per patch (kinda slow but oh well) -----
         check_rules = function(patches, asp_rules) {
           patches_u = unique(patches[!is.na(patches)])
@@ -155,13 +163,7 @@ CreateFlownet = function(flownet_name,
                                map_info[map_info[, 1] == "strata", 2]))
         level_names = unique(gsub(".tiff|.tif|.asc","",level_names))
 
-        if (length(readmap@data[,1]) == 1) {
-          map_df = as.data.frame(readmap@data) # works for 1 patch world
-        } else {
-          map_df = as.data.frame(readmap) #make data frame for ease of use
-        }
-
-        asp_maps = aggregate(map_df$asprule, by = map_df[level_names], FUN = mode_fun, simplify = T)
+        asp_maps = aggregate(map_df[[cfmaps[cfmaps[,1] == "asp_rule",2]]], by = map_df[level_names], FUN = mode_fun, simplify = T)
         names(asp_maps)[which(names(asp_maps) == "x")] = "asprule"
 
         rules_out = check_rules(patches = asp_maps$pch_30m1000, asp_rules = asp_maps$asprule)
@@ -169,14 +171,14 @@ CreateFlownet = function(flownet_name,
           print(rules_out)
           stop("Mode of rules was attempted but there are still patches with multiple rules. Check input maps.")
         }
-
         asp_mapdata = asp_maps$asprule
       }
 
-    } else if (suppressWarnings(all(!is.na(as.numeric(asp_map))))) { # if is a single number
-      asp_mapdata = as.numeric(asp_map)
+    } else if ("asp_rule" %in% notamap) { # if is a single number
+      asp_mapdata = map_df[[cfmaps[cfmaps[,1] == "basin",2]]]
+      asp_mapdata[!is.na(asp_mapdata)] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
     }
-    asp_list = aspatial_patches(asprules = asp_rules, asp_mapdata = asp_mapdata)
+    asp_list = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
   }
 
   # ------------------------------ Make flownet list ------------------------------
@@ -197,15 +199,9 @@ CreateFlownet = function(flownet_name,
     skip_hillslope_check = skip_hillslope_check)
 
   # ------------------------------ Multiscale routing/aspatial patches ------------------------------
-  if (!is.null(asp_rules)) {
-    if ("asp_rule" %in% notamap) {
-      map_list[["asp_rule"]] = raw_basin_data
-      map_list[["asp_rule"]][!is.na(map_list[["asp_rule"]])] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
-      #cfmaps = rbind(cfmaps, c("asp_rule", "asp_rule"))
-      cfmaps[cfmaps[,1] == "asp_rule", 2] = "asp_rule"
-    }
-
-    CF1 = multiscale_flow(CF1 = CF1, asp_maps = asp_maps, cfmaps = cfmaps, asp_list = asp_list)
+  if (!is.null(asprules)) {
+    patch_map = map_df[[cfmaps[cfmaps[,1] == "patch",2]]]
+    CF1 = multiscale_flow(CF1 = CF1, asp_map = asp_mapdata, patch_map = patch_map, asp_list = asp_list)
   }
 
   # ---------- Flownet list to flow table file ----------
