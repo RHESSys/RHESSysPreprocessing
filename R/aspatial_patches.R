@@ -27,7 +27,8 @@ aspatial_patches = function(asprules, asp_mapdata) {
   #rules_head = rules_in_trim[0:(min(which(startsWith(rules_in_trim,"ID")))-1)] # separate header
   rules_header = rules_in_trim[which(startsWith(rules_in_trim,"#"))] # this is for later use potentially, not being kept currently
   #rules_in_trim = rules_in_trim[min(which(startsWith(rules_in_trim,"ID"))):length(rules_in_trim)]
-  rules_in_trim = rules_in_trim[-which(startsWith(rules_in_trim,"#"))]
+  if(length(rules_header)>0)
+    rules_in_trim = rules_in_trim[-which(startsWith(rules_in_trim,"#"))]
   id_ind = which(startsWith(rules_in_trim,"ID")) # index IDs
   patch_ind = c(which(startsWith(rules_in_trim,"_patch")), which(startsWith(rules_in_trim,"_Patch"))) # index patches
   strata_ind = c(which(startsWith(rules_in_trim,"_stratum")), which(startsWith(rules_in_trim,"_canopy_strata"))) # index strata
