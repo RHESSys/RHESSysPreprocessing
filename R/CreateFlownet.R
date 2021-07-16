@@ -2,9 +2,6 @@
 #'
 #' Creates the flow networkd table used by RHESSys
 #' @param flownet_name The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.
-#' @param readin readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
-#' used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
-#' Streams map, and other optional maps, still need to be specified.
 #' @param asprules List of aspatial structure and inputs. Also can be path to rules file - must be used along with template input.
 #' @param road_width >0, defaults to 1.
 #' @inheritParams RHESSysPreprocess
@@ -12,7 +9,6 @@
 #' @export
 
 CreateFlownet = function(flownet_name,
-                         readin = NULL,
                          template = NULL,
                          type = "raster",
                          typepars = NULL,
@@ -44,12 +40,7 @@ CreateFlownet = function(flownet_name,
   template_clean = template_list[[1]] # template in list form
   var_names = template_list[[2]] # names of template vars
   map_info = template_list[[5]] # tables of maps and their inputs/names in the template
-
-  if (!wrapper & is.character(readin)) { #if run outside of rhessyspreprocess.R, and if readin is character. readin is the template (and path)
-    cfmaps = rbind(map_info,c("cell_length","none"), c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
-  } else if (wrapper | (!wrapper & is.matrix(readin))) { # map info is passsed directly from world gen - either in wrapper or outside of wrapper and readin is matrix
-    cfmaps = readin
-  }
+  cfmaps = rbind(map_info,c("cell_length","none"), c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
 
   # Check for streams map, menu allows input of stream map
   if (is.null(streams) & (cfmaps[cfmaps[,1] == "streams",2] == "none" | is.na(cfmaps[cfmaps[,1] == "streams",2]))) {
@@ -82,7 +73,7 @@ CreateFlownet = function(flownet_name,
   }
 
   # check inputs are maps or values
-  notamap = cfmaps[suppressWarnings( which(!is.na(as.numeric(cfmaps[,2])))),1]
+  notamap = cfmaps[suppressWarnings(which(!is.na(as.numeric(cfmaps[,2])))),1]
   maps_in = unique(cfmaps[cfmaps[,2] != "none" & !cfmaps[,1] %in% notamap,2])
 
   # ------------------------------ Use GIS_read to get maps ------------------------------
@@ -129,7 +120,7 @@ CreateFlownet = function(flownet_name,
   if (!is.null(asprules)) {
     asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
 
-    if (!"asp_rule" %in% notamap) { # if it's a map
+    if (suppressWarnings(is.na(as.numeric(asp_map)))) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
       asp_mapdata = as.data.frame(readmap)[asp_map]
 
@@ -174,9 +165,9 @@ CreateFlownet = function(flownet_name,
         asp_mapdata = asp_maps$asprule
       }
 
-    } else if ("asp_rule" %in% notamap) { # if is a single number
+    } else { # if is a single number
       asp_mapdata = map_df[[cfmaps[cfmaps[,1] == "basin",2]]]
-      asp_mapdata[!is.na(asp_mapdata)] = as.numeric(cfmaps[cfmaps[,1] == "asp_rule",2])
+      asp_mapdata[!is.na(asp_mapdata)] = as.numeric(asp_map)
     }
     asp_list = aspatial_patches(asprules = asprules, asp_mapdata = asp_mapdata)
   }

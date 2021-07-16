@@ -6,7 +6,6 @@
 \usage{
 CreateFlownet(
   flownet_name,
-  readin = NULL,
   template = NULL,
   type = "raster",
   typepars = NULL,
@@ -25,10 +24,6 @@ CreateFlownet(
 }
 \arguments{
 \item{flownet_name}{The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.}
-
-\item{readin}{readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
-used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
-Streams map, and other optional maps, still need to be specified.}
 
 \item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:
 <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
