@@ -19,7 +19,12 @@ build_redefine_template = function(template, name, overwrite) {
 
   # Set all vars to -9999
   for (i in var_index) {
-    redef_template[[i]] = c(redef_template[[i]][1], "value", "-9999")
+    if (length(redef_template[[i]]) == 3){
+      redef_template[[i]] = c(redef_template[[i]][1], "value", "-9999")
+      }
+    if (length(redef_template[[i]]) == 4){
+      redef_template[[i]] = c(redef_template[[i]][1], "value", "-9999", "-9999")
+      }
   }
 
   # print template
