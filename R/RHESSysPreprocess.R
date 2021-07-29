@@ -126,7 +126,7 @@ RHESSysPreprocess = function(template,
                             unique_strata_ID = unique_strata_ID,
                             asprules = asprules)
 
-  readin = world_gen_out[[1]]
+  #readin = world_gen_out[[1]]
   #asp_rules = world_gen_out[[2]]
 
   # ---------- Run CreateFlownet ----------
@@ -142,7 +142,7 @@ RHESSysPreprocess = function(template,
   }
 
   CreateFlownet(flownet_name = flownet_name,
-                readin = readin,
+                #readin = readin,
                 template = template,
                 type = type,
                 typepars = typepars,
