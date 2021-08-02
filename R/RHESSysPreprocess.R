@@ -142,7 +142,6 @@ RHESSysPreprocess = function(template,
   }
 
   CreateFlownet(flownet_name = flownet_name,
-                #readin = readin,
                 template = template,
                 type = type,
                 typepars = typepars,

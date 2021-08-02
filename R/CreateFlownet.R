@@ -119,6 +119,7 @@ CreateFlownet = function(flownet_name,
   # read aspatial rules if needed
   if (!is.null(asprules)) {
     asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
+    patch_map = map_df[[cfmaps[cfmaps[,1] == "patch",2]]] # set for use later - overwrite if using mode
 
     if (suppressWarnings(is.na(as.numeric(asp_map)))) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
@@ -157,7 +158,10 @@ CreateFlownet = function(flownet_name,
         asp_maps = aggregate(map_df[[cfmaps[cfmaps[,1] == "asp_rule",2]]], by = map_df[level_names], FUN = mode_fun, simplify = T)
         names(asp_maps)[which(names(asp_maps) == "x")] = "asprule"
 
-        rules_out = check_rules(patches = asp_maps$pch_30m1000, asp_rules = asp_maps$asprule)
+        patch_map = asp_maps[[cfmaps[cfmaps[,1] == "patch",2]]]
+
+        rules_out = check_rules(patches = patch_map, asp_rules = asp_maps$asprule)
+
         if (!is.null(rules_out)) {
           print(rules_out)
           stop("Mode of rules was attempted but there are still patches with multiple rules. Check input maps.")
@@ -191,7 +195,6 @@ CreateFlownet = function(flownet_name,
 
   # ------------------------------ Multiscale routing/aspatial patches ------------------------------
   if (!is.null(asprules)) {
-    patch_map = map_df[[cfmaps[cfmaps[,1] == "patch",2]]]
     CF1 = multiscale_flow(CF1 = CF1, asp_map = asp_mapdata, patch_map = patch_map, asp_list = asp_list)
   }
 
