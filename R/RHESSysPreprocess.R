@@ -5,18 +5,14 @@
 #' @param template Template file used to generate worldfile for RHESSys. Generic strucutre is:
 #' <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 #' <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
-#' by your chosen method of data input(GRASS or raster), set using the "type" arguement.
+#' by your chosen method of data input(raster), set using the "type" arguement.
 #' @param name The base name (and potentially, path as well) to be used for your ouput files.
 #' This will create a world file called "<name>.world", and a flow table called "<name>.flow".
 #' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
 #' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-#' ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
-#' GRASS GIS being used (6.x or 7.x).  GRASS GIS type can also be set explicitly to "GRASS6" or "GRASS7".
+#' ASCII is supported, but 0's cannot be used as values for data.
 #' @param typepars Parameters needed based on input data type used. If using raster type, typepars should be a string
 #' indicating the path to a folder containing the raster files that are referenced by the template.
-#' For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
-#' Example parameters are included in an example script included in this package. See initGRASS help
-#' for more info on parameters.
 #' @param streams Streams map to be used in building the flowtable.
 #' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
 #' @param roads Roads map, an optional input for flowtable creation.

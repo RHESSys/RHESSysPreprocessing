@@ -6,7 +6,7 @@
 \usage{
 GIS_read(
   maps_in,
-  type,
+  type = "raster",
   typepars,
   map_info = NULL,
   seq_patch_IDs = FALSE,
@@ -16,12 +16,9 @@ GIS_read(
 \arguments{
 \item{maps_in}{Character vector of maps to be read in by the chosen method.}
 
-\item{type}{GIS type to be used. Options are GRASS(will auto-detect GRASS6 or GRASS7) GRASS6, GRASS7, or raster.}
+\item{type}{Legacy option - now ONLY accepts "raster" or "Raster"}
 
-\item{typepars}{Parameters needed based on GIS type used. For GRASS GIS type, typepars is a
-vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
-Example parameters are included in an example script included in this package. See initGRASS help
-for more info on parameters. For raster type, typepars is a file path to a folder containing the rasters indicated in read_in.}
+\item{typepars}{The file path to a folder containing the rasters specified via template or other args. TO BE RENAMED TO MAP_DIR.}
 
 \item{map_info}{Two column matrix of map types and names, output of `read_template()``}
 
