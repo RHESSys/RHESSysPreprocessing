@@ -16,7 +16,8 @@ make_flow_list(
   cell_length,
   road_width = NULL,
   parallel,
-  make_stream
+  make_stream,
+  skip_hillslope_check
 )
 }
 \arguments{
@@ -46,6 +47,9 @@ automated actions taken to make hillslope parallelization possible, or errors in
 \item{make_stream}{The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 Default is 4.}
+
+\item{skip_hillslope_check}{TRUE/FALSE to skip the recursive check for segmented hillslopes. Segmented hillslopes will break the routing, but the
+recursive check can trigger various recursion protections when hillslopes are large.}
 }
 \description{
 This function is the main component of the larger create_flownet function.

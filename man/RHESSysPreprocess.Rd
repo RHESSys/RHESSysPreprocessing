@@ -23,6 +23,7 @@ RHESSysPreprocess(
   fire_grid_out = FALSE,
   parallel = TRUE,
   make_stream = 4,
+  skip_hillslope_check = FALSE,
   wrapper = TRUE
 )
 }
@@ -77,6 +78,9 @@ automated actions taken to make hillslope parallelization possible, or errors in
 \item{make_stream}{The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 Default is 4.}
+
+\item{skip_hillslope_check}{TRUE/FALSE to skip the recursive check for segmented hillslopes. Segmented hillslopes will break the routing, but the
+recursive check can trigger various recursion protections when hillslopes are large.}
 
 \item{wrapper}{internal argument to track if being run as all-in-one}
 }

@@ -3,7 +3,7 @@
 #' @param asp_mapdata map data or value, indicating the rule IDs being used
 #' @author Will Burke
 
-aspatial_patches = function(asprules,asp_mapdata) {
+aspatial_patches = function(asprules, asp_mapdata) {
 
   # some functions
   # splits a vector up at a specific character
@@ -27,7 +27,8 @@ aspatial_patches = function(asprules,asp_mapdata) {
   #rules_head = rules_in_trim[0:(min(which(startsWith(rules_in_trim,"ID")))-1)] # separate header
   rules_header = rules_in_trim[which(startsWith(rules_in_trim,"#"))] # this is for later use potentially, not being kept currently
   #rules_in_trim = rules_in_trim[min(which(startsWith(rules_in_trim,"ID"))):length(rules_in_trim)]
-  rules_in_trim = rules_in_trim[-which(startsWith(rules_in_trim,"#"))]
+  if(length(rules_header)>0)
+    rules_in_trim = rules_in_trim[-which(startsWith(rules_in_trim,"#"))]
   id_ind = which(startsWith(rules_in_trim,"ID")) # index IDs
   patch_ind = c(which(startsWith(rules_in_trim,"_patch")), which(startsWith(rules_in_trim,"_Patch"))) # index patches
   strata_ind = c(which(startsWith(rules_in_trim,"_stratum")), which(startsWith(rules_in_trim,"_canopy_strata"))) # index strata
@@ -49,7 +50,8 @@ aspatial_patches = function(asprules,asp_mapdata) {
 
   # ---------- build rulevars based on rules and map data ----------
   map_ids = unique(asp_mapdata) # get rule IDs from map/input
-  map_id_tags = paste("rule_",map_ids,sep = "") # all map IDs concated w tags for referencing/reading in code
+  if (is.list(map_ids)) {map_ids = unlist(map_ids)}
+  map_id_tags = paste0("rule_", as.numeric(map_ids)) # all map IDs concated w tags for referencing/reading in code
 
   asp_vars = as.list(rep(0,length(map_ids))) # highest level list of the different rules
   # strata_index = as.list(rep(0,length(map_ids))) # get rid of in this version i think

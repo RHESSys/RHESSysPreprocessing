@@ -2,22 +2,23 @@
 #'
 #' Modifies an existing flowtable (R list) to work with multisacle routing.
 #' @param CF1 Flowtable list object created from make_flow_list
-#' @param map_list List containing input maps as matrices
-#' @param cfmaps Table of map types and file names
+#' @param asp_map Map of the aspatial rules
+#' @param patch_map Map of the patches
 #' @param asp_list List of aspatial rules
 # Will Burke 1/16/19
 
-multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
+multiscale_flow = function(CF1, asp_map, patch_map, asp_list) {
 
-  #nbr 121
-  #nbr patch 11955
-  # no times nbr asp ct is empty
+  #nbr 329
+  #nbr patch 329
+  # nbr_asp_ct is empty
   #which(lapply(CF1,"[[", 9) == 15660)
 
   # functions for applys
   apply_patches = function(CFp) {
+    print(asp_list)
     id = paste0("rule_", unique(asp_map[which(raw_patch_data == CFp$PatchID)]))
-    asp_count = ncol(rulevars[[id]]$patch_level_vars[1, ]) - 1 # get number of aspatial patches for current patch
+    asp_count = ncol(asp_list[[id]]$patch_level_vars[1, ]) - 1 # get number of aspatial patches for current patch
     asp = c(1:asp_count)
     CFasp = lapply(asp, add_asp,CFp, id)
     unlist(CFasp,recursive = F)
@@ -28,7 +29,7 @@ multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
     CFasp$PatchID = CFp$PatchID * 100 + asp # aspatial patch ID is old patch ID *100 + aspatial number
     CFasp$Number = CFp$Number * 100 + asp # same modification to number
     CFasp$PatchFamilyID = CFp$PatchID # retain old patch ID as patch family ID
-    CFasp$Area = CFp$Area * as.numeric(rulevars[[id]]$patch_level_vars[rulevars[[id]]$patch_level_vars[, 1] == "pct_family_area", asp + 1]) # change area
+    CFasp$Area = CFp$Area * as.numeric(asp_list[[id]]$patch_level_vars[asp_list[[id]]$patch_level_vars[, 1] == "pct_family_area", asp + 1]) # change area
     # this output is an actual mess but whatever
     nbr_out = mapply(add_nbrs, nbr = CFp$Neighbors, gamma = CFp$Gamma_i, slope = CFp$Slopes, border = CFp$Border_perimeter, SIMPLIFY = F)
     CFasp$Neighbors = unlist(lapply(nbr_out, "[[", "new_nbrs"))
@@ -41,24 +42,22 @@ multiscale_flow = function(CF1, asp_maps, cfmaps, asp_list) {
   add_nbrs = function(nbr, gamma, slope, border) {
     nbr_patch = patch_ID[numbers == nbr] # patch ID from number
     nbr_id = paste0("rule_", unique(asp_map[which(raw_patch_data == nbr_patch)])) # get rule ID
-    nbr_asp_ct = ncol(rulevars[[nbr_id]]$patch_level_vars[1, ]) - 1
+    nbr_asp_ct = ncol(asp_list[[nbr_id]]$patch_level_vars[1, ]) - 1
     new_slopes = rep(slope, nbr_asp_ct)
     new_borders = rep(border, nbr_asp_ct)
     new_nbrs = nbr * 100 + c(1:nbr_asp_ct)
     # original gamma is multiplied by respective areas of the new patches - should sum to original
-    new_gammas = gamma * as.numeric(rulevars[[nbr_id]]$patch_level_vars[rulevars[[nbr_id]]$patch_level_vars[, 1] == "pct_family_area", 1 + c(1:nbr_asp_ct)])
+    new_gammas = gamma * as.numeric(asp_list[[nbr_id]]$patch_level_vars[asp_list[[nbr_id]]$patch_level_vars[, 1] == "pct_family_area", 1 + c(1:nbr_asp_ct)])
     return(list("new_nbrs" = new_nbrs, "new_gammas" = new_gammas, "new_slopes" = new_slopes, "new_borders" = new_borders))
   }
 
   cat("Creating multiscale flowtable - this may take a moment with many patches")
 
   # ----- Variable setup -----
-  asp_map = asp_maps[[cfmaps[cfmaps[, 1] == "asp_rule", 2]]] # matrix of aspatial rules
-
   patch_ID = unlist(lapply(CF1, "[[", 9)) # patch IDs from cf1
   numbers = unlist(lapply(CF1, "[[", 1)) # flow list numbers
-  raw_patch_data = asp_maps[[cfmaps[cfmaps[, 1] == "patch", 2]]] # get patch matrix inside the function
-  rulevars = asp_list # get rules - state variable overrides
+  raw_patch_data = patch_map
+  #rulevars = asp_list # get rules - state variable overrides
   CF2 = list() # empty list for new flow list
 
   loop_ver = F

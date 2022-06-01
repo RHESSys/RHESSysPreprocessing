@@ -6,10 +6,10 @@
 \usage{
 CreateFlownet(
   flownet_name,
-  readin = NULL,
+  template = NULL,
   type = "raster",
   typepars = NULL,
-  asp_list = NULL,
+  asprules = NULL,
   streams = NULL,
   overwrite = FALSE,
   roads = NULL,
@@ -18,15 +18,17 @@ CreateFlownet(
   roofs = NULL,
   parallel = TRUE,
   make_stream = 4,
+  skip_hillslope_check = FALSE,
   wrapper = FALSE
 )
 }
 \arguments{
 \item{flownet_name}{The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.}
 
-\item{readin}{readin indicates the maps to be used. If CreateFlowmet.R is run it's own, this should point to the template which references the maps(or values)
-used for the various levels and statevars. Otherwise, if run inside of RHESSysPreprocess, readin will use the map data from world_gen.R,
-Streams map, and other optional maps, still need to be specified.}
+\item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:
+<state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
+<levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
+by your chosen method of data input(GRASS or raster), set using the "type" arguement.}
 
 \item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
 in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
@@ -39,7 +41,7 @@ For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS param
 Example parameters are included in an example script included in this package. See initGRASS help
 for more info on parameters.}
 
-\item{asp_list}{List of aspatial structure and inputs. Used internally}
+\item{asprules}{List of aspatial structure and inputs. Also can be path to rules file - must be used along with template input.}
 
 \item{streams}{Streams map to be used in building the flowtable.}
 
@@ -59,6 +61,9 @@ automated actions taken to make hillslope parallelization possible, or errors in
 \item{make_stream}{The maximum distance (cell lengths) away from an existing stream that a patch can be automatically coerced to be a stream.
 Setting to TRUE will include patches at any distance. This is needed for hillslope parallelization, as all hillslopes must have an outlet stream patch.
 Default is 4.}
+
+\item{skip_hillslope_check}{TRUE/FALSE to skip the recursive check for segmented hillslopes. Segmented hillslopes will break the routing, but the
+recursive check can trigger various recursion protections when hillslopes are large.}
 
 \item{wrapper}{internal argument to track if being run as all-in-one}
 }
