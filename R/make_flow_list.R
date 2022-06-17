@@ -13,7 +13,7 @@
 #' @param raw_road_data road map matrix
 #' @param cell_length cell length in meters
 #' @inheritParams RHESSysPreprocess
-#' @inheritParams CreateFlownet
+#' @inheritParams create_flownet
 #' @author Daniel Nash
 #' @author Will Burke
 #' @importFrom utils txtProgressBar

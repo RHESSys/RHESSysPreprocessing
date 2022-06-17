@@ -37,9 +37,9 @@ devtools::install_github("RHESSys/RHESSysPreprocessing")
 ## Contents
 RHESSysPreprocessing contains a few main components:
 
-* `RHESSysPreprocess()`: An all-in-one function that runs both `world_gen()` and `CreateFlownet()`
+* `RHESSysPreprocess()`: An all-in-one function that runs both `world_gen()` and `create_flownet()`
 * `world_gen()`: Creates a worldfile for use in RHESSys (replaces g2w)
-* `CreateFlownet()`: Creates a RHESSys flowtable (replaces cf)
+* `create_flownet()`: Creates a RHESSys flowtable (replaces cf)
 
 Other functions of note that can be used on their own:
 
@@ -69,8 +69,8 @@ Prerequisites:
     i) Follow the instructions included in the script, and make edits to customize for your uses.
     i) Script will run the RHESSysPreprocess.R function, and produce a worldfile and flowtable.
 1. Run separately
-    i) Run world_gen.R and CreateFlownet.R
-    i) For information on respective inputs, consult their help pages: `help(world_gen)` & `help(CreateFlownet)`
+    i) Run world_gen.R and create_flownet.R
+    i) For information on respective inputs, consult their help pages: `help(world_gen)` & `help(create_flownet)`
 
 ## Parallelization
 To run the hillslope parallelized version of RHESSys (develop branch - Dec, 2018), you must have a hillslope parallelized flowtable.
@@ -79,7 +79,7 @@ Currently (1/14/19) the develop branch should automatically produce a hillslope 
 
 Generate from original inputs:
 
-1. Setup RHESSysPreprocess.R or CreateFlownet.R as normal (see above instructions and included example R scripts)
+1. Setup RHESSysPreprocess.R or create_flownet.R as normal (see above instructions and included example R scripts)
 1. Set argument `parallel = TRUE`
 1. Set `make_stream` argument if desired (default is 4, can be set to any integer, or TRUE)
     * The "make_stream" argument defines the distance from an existing stream where a patch/cell can be coerced to be a stream. Since all hillslopes must have stream outlets, if a hillslope outlet exists outside of the distance threshold set by "make_stream", an error will occur and indicate the problem hillslope and outlet patch of that hillslope. This typically occurs as an artifact of how watershed analysis is done, and hillslopes are created, which sometimes results in fragmented or very small/skinny hillslopes, far away from streams.
@@ -91,7 +91,7 @@ Convert from existing:
 1. See above notes on the "make_stream" argument, which behaves the same here.
 
 ### Additional Information
-The RHESSysPreprocessing package features R help documentation with more information on each individual function, accessible via `?` or `help()`, see in particular: `help(RHESSysPreprocess)`, `help(world_gen)`, and `help(CreateFlownet)`.  
+The RHESSysPreprocessing package features R help documentation with more information on each individual function, accessible via `?` or `help()`, see in particular: `help(RHESSysPreprocess)`, `help(world_gen)`, and `help(create_flownet)`.  
 
 A wide variety of information on RHESSys itself is available on the RHESSys Github wiki page https://github.com/RHESSys/RHESSys/wiki
 

@@ -9,9 +9,9 @@ Previously was compatible with GRASS GIS - versions 6.4.x and 7.x. Those GIS inp
 
 -----Contents-----
 Package contains a few main components:
-RHESSysPreprocess.R				An all-in-one function that runs both world_gen.R and CreateFlownet.R
+RHESSysPreprocess.R				An all-in-one function that runs both world_gen.R and create_flownet.R
 world_gen.R						Creates a worldfile for use in RHESSys (replaces g2w)
-CreateFlownet.R					Creates a RHESSys flowtable (replaces cf)
+create_flownet.R					Creates a RHESSys flowtable (replaces cf)
 
 Other functions of note that can be used on their own:
 template_read.R					Reads a template file and produces a clean template in list form, indices of levels and variables, and maps.
@@ -34,9 +34,9 @@ Installation/loading of this package can be done a few ways:
 	- Under the "Build" menu, select "Load All"
 
 -----Instructions-----
-Prerequisites: 
+Prerequisites:
 	- Input spatial data must be generated first. This includes level maps (world, basin, etc.) and maps of aspect, slope, horizon, etc.
-	- Template - template must point to the spatial data you want to use 
+	- Template - template must point to the spatial data you want to use
 	- Additional maps for flowtable - stream map, and potentially roofs, roads, and impervious area must be generated as well.
 1) Method 1: All-in-one
 	- Open the set-up/example run script "run_RHESSysPreprocess.R"
@@ -45,17 +45,17 @@ Prerequisites:
 2) Method 2: run separately
 	2a) Create worldfile
 		- Look at R help for the world_gen function (via:"help(world_gen)") and follow directions to run world_gen.R
-		- Function will produce a worldfile, as well as output a list (in R) for potential use in CreateFlownet.
+		- Function will produce a worldfile, as well as output a list (in R) for potential use in create_flownet.
 	2b) Create flowtable
-		- Look at R help for the CreateFlownet function (via:"help(CreateFlownet)") and follow directions to run CreateFlownet.R
+		- Look at R help for the create_flownet function (via:"help(create_flownet)") and follow directions to run create_flownet.R
 		- Function will produce a flowtable
 
 -----Parallelization-----
 To run the hillslope parallelized version of RHESSys (develop branch - Dec, 2018), you must have a hillslope parallelized flowtable.
-This can be done either by re-generating the flowtable from original inputs (preferred), or converting an existing flowtable. 
+This can be done either by re-generating the flowtable from original inputs (preferred), or converting an existing flowtable.
 Currently (1/14/19) the develop branch should automatically produce a hilslope parallelized flowtable.
 Generate from original inputs:
-	- Setup RHESSysPreprocess.R or CreateFlownet.R as normal (see above instructions and included example R scripts)
+	- Setup RHESSysPreprocess.R or create_flownet.R as normal (see above instructions and included example R scripts)
 	- Set arguemnt "parallel" to TRUE
 	- Set "make_stream" argument if desired (default is 4, can be set to any integer, or TRUE)
 		- The "make_stream" argument defines the distance from an existing stream that the outlet of a hillslope can be set to be a stream.
@@ -68,7 +68,7 @@ Convert from existing:
 	- Use the convert_flowtable.R function and set your existing flowtable as the input.
 	- See above notes on the "make_stream" argument, which functions the same in this case.
 
-Additional information on each function can be found in the R documentation by using help(RHESSysPreprocess), help(world_gen), help(CreateFlownet) etc.
+Additional information on each function can be found in the R documentation by using help(RHESSysPreprocess), help(world_gen), help(create_flownet) etc.
 Additional information can also be found on the RHESSys Github wiki page https://github.com/RHESSys/RHESSys/wiki
 
 If you encounter bugs, let me know wburke@bren.ucsb.edu, or add an issue on the develop branch of RHESSys on Github

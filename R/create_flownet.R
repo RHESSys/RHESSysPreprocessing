@@ -1,4 +1,4 @@
-#' CreateFlownet
+#' create_flownet
 #'
 #' Creates the flow networkd table used by RHESSys
 #' @param flownet_name The name of the flow network file to be created.  Will be coerced to have ".flow" extension if not already present.
@@ -8,7 +8,7 @@
 #' @author Will Burke
 #' @export
 
-CreateFlownet = function(flownet_name,
+create_flownet = function(flownet_name,
                          template = NULL,
                          type = "raster",
                          typepars = NULL,

@@ -1,7 +1,7 @@
 #' RHESSysPreprocess
 #'
 #' Preforms RHESSys Preprocessing, comprised of two main steps: generating a world file, and generating a flow table.
-#' World file is generated via world_gen.R, and flow table is generated via CreateFlownet.R.
+#' World file is generated via world_gen.R, and flow table is generated via create_flownet.R.
 #' @param template Template file used to generate worldfile for RHESSys. Generic strucutre is:
 #' <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 #' <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
@@ -125,8 +125,8 @@ RHESSysPreprocess = function(template,
   #readin = world_gen_out[[1]]
   #asp_rules = world_gen_out[[2]]
 
-  # ---------- Run CreateFlownet ----------
-  cat("Begin CreateFlownet.R")
+  # ---------- Run create_flownet ----------
+  cat("Begin create_flownet.R")
 
   if (file.exists(flownet_name) & overwrite == FALSE) { # check for flownet overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
@@ -137,7 +137,7 @@ RHESSysPreprocess = function(template,
     }
   }
 
-  CreateFlownet(flownet_name = flownet_name,
+  create_flownet(flownet_name = flownet_name,
                 template = template,
                 type = type,
                 typepars = typepars,

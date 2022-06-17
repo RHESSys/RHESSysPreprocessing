@@ -98,7 +98,7 @@ header = FALSE
 
 Parallelization
 ---------------
-Current (v7.1+, Dec 2018 and on) develop branch RHESSys is hillslope paralleized and requires a flowtable that is compatible. This makes a few key changes relative to the old flowtable generation, highlighted in the README and the R help documentation for RHESSysPreprocess and CreateFlownet.
+Current (v7.1+, Dec 2018 and on) develop branch RHESSys is hillslope paralleized and requires a flowtable that is compatible. This makes a few key changes relative to the old flowtable generation, highlighted in the README and the R help documentation for RHESSysPreprocess and create_flownet.
 ```{r}
 parallel = TRUE
 ```

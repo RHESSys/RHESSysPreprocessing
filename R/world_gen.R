@@ -510,7 +510,7 @@ world_gen = function(template,
     print(paste("Created header file:",headfile),quote = FALSE)
   }
 
-  # ---------------------- Output for use in CreateFlownet ----------------------
+  # ---------------------- Output for use in create_flownet ----------------------
   cfmaps = rbind(map_info,
                  c("cell_length",cell_len),
                  c("streams","none"), c("roads","none"), c("impervious","none"),c("roofs","none"))
