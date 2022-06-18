@@ -82,7 +82,7 @@ recursive check can trigger various recursion protections when hillslopes are la
 }
 \description{
 Preforms RHESSys Preprocessing, comprised of two main steps: generating a world file, and generating a flow table.
-World file is generated via world_gen.R, and flow table is generated via CreateFlownet.R.
+World file is generated via world_gen.R, and flow table is generated via create_flownet.R.
 }
 \seealso{
 \code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
