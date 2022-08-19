@@ -32,6 +32,11 @@ aspatial_patches = function(asprules, asp_mapdata) {
   id_ind = which(startsWith(rules_in_trim,"ID")) # index IDs
   patch_ind = c(which(startsWith(rules_in_trim,"_patch")), which(startsWith(rules_in_trim,"_Patch"))) # index patches
   strata_ind = c(which(startsWith(rules_in_trim,"_stratum")), which(startsWith(rules_in_trim,"_canopy_strata"))) # index strata
+
+  # if (length(id_ind) != length(patch_ind) | length(id_ind) != length(strata_ind)) {
+  #   stop("Error: In rules file:", asprules,"")
+  # }
+
   rule_split = strsplit(rules_in_trim,"[ \t]+") # split strings at tabs and spaces
 
   id_split = splitAt(rule_split,c(id_ind,patch_ind,strata_ind)) # split rules by IDs, patches, and strata

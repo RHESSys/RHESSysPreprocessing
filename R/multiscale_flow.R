@@ -9,14 +9,9 @@
 
 multiscale_flow = function(CF1, asp_map, patch_map, asp_list) {
 
-  #nbr 329
-  #nbr patch 329
-  # nbr_asp_ct is empty
-  #which(lapply(CF1,"[[", 9) == 15660)
-
   # functions for applys
   apply_patches = function(CFp) {
-    print(asp_list)
+    #print(asp_list)
     id = paste0("rule_", unique(asp_map[which(raw_patch_data == CFp$PatchID)]))
     asp_count = ncol(asp_list[[id]]$patch_level_vars[1, ]) - 1 # get number of aspatial patches for current patch
     asp = c(1:asp_count)

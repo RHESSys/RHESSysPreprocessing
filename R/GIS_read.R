@@ -59,7 +59,8 @@ GIS_read = function(maps_in, type = "raster", typepars, map_info = NULL, seq_pat
          check they're specified correctly in the template/elsewhere, and it may help to specify the extensions.")
   }
 
-  # read in rasters
+  # TODO redo raster work with terra, still read as stack, etc.
+
   # NATIVE DRIVERS -- may or may not actually help, future testing maybe
   read_stack = try(raster::stack(x = file_paths))
 
