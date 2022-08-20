@@ -163,7 +163,6 @@ world_gen = function(template,
   } # end loop through n_basestations
 
   # -------------------- Process Template + Maps --------------------
-
   # Build list based on operations called for by template
   statevars = vector("list",length(template_clean))
 
@@ -190,6 +189,7 @@ world_gen = function(template,
         }
       }
     }
+    # TODO clarify and fix at least this section. probably should make the function processing a little more robust and its own function anyways
     strata_values = 2
     if (length(template_clean[[i]]) != 2 + length(strata) & template_clean[[i]][2] %in% c("value", "dvalue", "aver", "mode")) {
       if (length(template_clean[[i]]) == 2) {
@@ -221,20 +221,24 @@ world_gen = function(template,
         maptmp = as.vector(t(map_df[template_clean[[i]][5]]))
         statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = "mean")
         statevars[[i]][[s]][, "x"] = statevars[[i]][[s]][, "x"] * as.numeric(template_clean[[i]][3])
-      } else if (template_clean[[i]][2] == "spavg") { #spherical average
+      } else if (template_clean[[i]][2] == "spavg") { #spherical average - should only be for aspect
         maptmp = as.vector(t(map_df[template_clean[[i]][3]]))
         rad = (maptmp * pi) / (180) #convert to radians
         sin_avg = aggregate(sin(rad), by = level_agg, FUN = "mean") #avg sin
         cos_avg = aggregate(cos(rad), by = level_agg, FUN = "mean") #avg cos
         aspect_rad = atan2(sin_avg[, "x"], cos_avg[, "x"]) # sin and cos to tan
         aspect_deg = (aspect_rad * 180) / (pi) #rad to deg
-        for (a in 1:length(aspect_deg)) {
-          if (aspect_deg[a] < 0) {
-            aspect_deg[a] = 360 + aspect_deg[a]
-          }
-        }
-        statevars[[i]][[s]] = cos_avg
-        statevars[[i]][[s]][, "x"] = aspect_deg
+        aspect_deg[aspect_deg < 0] = 360 + aspect_deg[aspect_deg < 0] # change from -180 to 180 -> 0 to 360
+        # assuming input is from GRASS GIS,using r.slope.aspect gives aspect in degrees with 0==360==East, and 90==North
+        # see: https://grass.osgeo.org/grass82/manuals/r.slope.aspect.html
+        # Adjusting back to 0==360==North here
+        # invert values to make it clockwise instead of counter clockwise
+        aspect_deg_cw = 360 - aspect_deg
+        # shift by 90 deg to get a north azimuth eg North==0
+        aspect_deg_cw_n = ifelse(aspect_deg_cw <= 270, aspect_deg_cw + 90, aspect_deg_cw - 270)
+        statevars[[i]][[s]] = cos_avg # just to initialize
+        statevars[[i]][[s]][, "x"] = aspect_deg_cw_n
+
       } else if (template_clean[[i]][2] == "area") { #only for state var area
         statevars[[i]][[s]] = aggregate(cellarea, by = level_agg, FUN = "sum")
       } else {
