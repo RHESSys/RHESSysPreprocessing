@@ -404,12 +404,19 @@ make_flow_list <- function(raw_patch_data,
 
     if (gamma_tot != 0) { # if there's a downslope neighbor
       tp_gamma <- tp_gamma/gamma_tot # normalize gamma by total (% or proportion)
-      tp_TotalG <- (gamma_tot/perim_sum)*flw_struct$Area[i] # gamma_tot/perim_sum = sum of slopes * area = volume
+      #09212022LML the horizental flow (from each reservoir layer) should be calculated as layer depth X Ksat X perim X slope (i.e dy/dx)
+      #the calculation of transimissivity profile should be revised accordingly in RHESSys
+      #tp_TotalG <- (gamma_tot/perim_sum)*flw_struct$Area[i] # gamma_tot/perim_sum = sum of slopes * area = volume
+      tp_TotalG <- gamma_tot # sum perim * slope of all neighbors
     } else {
       if (is.null(slope_i) | length(slope_i) == 0) { # if there is only one patch slope_i will be null,
-        tp_TotalG <- flw_struct$Area[i]
+        #09212022LML
+        #tp_TotalG <- flw_struct$Area[i]
+        tp_TotalG <- 0.0
       } else {#if all upslope, take slope from closest neighbor in height
-        tp_TotalG <- -max(slope_i)*flw_struct$Area[i]
+        #09212022LML
+        #tp_TotalG <- -max(slope_i)*flw_struct$Area[i]
+        tp_TotalG <- -max(slope_i)*perim_sum
       }
     }
 
