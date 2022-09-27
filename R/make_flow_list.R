@@ -47,7 +47,7 @@ make_flow_list <- function(raw_patch_data,
   options(scipen = 999) # IF DEBUGGING YOU WILL HAVE ERRORS ON LARGE BASINS WITHOUT THIS - comes from numeric to character conversion
 
   # -------------------- Build unique patch IDs --------------------
-  cat("Generating unique patch IDs")
+  cat("Generating unique patch IDs\n")
 
   id_data = data.frame("Basin" = as.vector(raw_basin_data[!is.na(raw_basin_data)]),
                        "Hill" = as.vector(raw_hill_data[!is.na(raw_basin_data)]),
@@ -128,7 +128,7 @@ make_flow_list <- function(raw_patch_data,
   # patch_borders is an array, initailly 0 but will be filled with the number of times patch i
   # touches patch j. the diagonal will be the number of times patch i touches anything.
   # -------------------- D8 neighbor search and border count --------------------
-  cat("Finding patch neighbors")
+  cat("Finding patch neighbors\n")
 
   # new - list instead of matrix
   patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
@@ -225,7 +225,7 @@ make_flow_list <- function(raw_patch_data,
     }
 
     if (any(hill_no_outlets[,2] == 0) & length(flw_struct[,1]) != 1) { # if there are any hillslopes without streams
-      cat("Correcting for hillslopes missing stream outlets")
+      cat("Correcting for hillslopes missing stream outlets\n")
       streams = flw_struct[flw_struct$Landtype == 1,] # make var of streams
       for (i in hill_no_outlets[hill_no_outlets[,2] == 0,1]) {
         hill_patches = flw_struct[flw_struct$Hill == i,] # get patches from problem hillslope
@@ -250,16 +250,18 @@ make_flow_list <- function(raw_patch_data,
     }
     if (!is.null(no_stream_fix)) {
       cat(paste(length(no_stream_fix),"hillslopes had their lowest elevation patches set to streams, at a max distance from existing streams of",
-                  max(print_dist_fix),"cell lengths."))
+                  max(print_dist_fix),"cell lengths.\n"))
     }
     if (!is.null(no_stream)) { # output hillslopes that weren't corrected
-      cat("The following outlet patches were outside of the",make_stream,"cell length distance threshold set by the 'make_stream' argument.")
+      cat("The following outlet patches were outside of the",make_stream,"cell length distance threshold set by the 'make_stream' argument.\n")
       cat("Dist2Stream" = print_dist,flw_struct[no_stream,])
       stop(noquote("The above hillslopes must have stream patch outlets, either increase the value of the 'make_stream' argument, or fix via GIS."))
     }
 
 
     find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill, itr_ct = NULL, itr_max = 10000) {
+     while(length(missing) > 0) {
+
       # add start to found, only for first itr tho
       if (is.null(history)) {
         found = start
@@ -269,6 +271,9 @@ make_flow_list <- function(raw_patch_data,
       # find the neighbors
       neighbors = names(patch_borders[[start]])[-1][names(patch_borders[[start]])[-1] %in% flw_struct[flw_struct$Hill == hill, "Number"]]
       neighbors = as.numeric(neighbors)
+
+      #cat("neighbors:",neighbors, "missing(size):", length(missing),"\n")
+
       # update the found vector to include those neighbors
       found = c(found, neighbors)
       # remove the found from missing
@@ -284,8 +289,13 @@ make_flow_list <- function(raw_patch_data,
 
       if (!is.null(itr_ct)) {
         itr_ct = itr_ct + 1
+
+        #cat("itr_ct:",itr_ct," length_found:", length(found),
+        #    " length_history:",length(history), "length_miss:",length(missing),
+        #    "\n")
+
         if (itr_ct == itr_max) {
-          cat("Reached iteration limit of ",itr_max)
+          cat("Reached iteration limit of ",itr_max, "\n")
           return(list(missing, found, history, start))
         }
       }
@@ -293,23 +303,25 @@ make_flow_list <- function(raw_patch_data,
       # if we haven't found everything, keep iterating through found patches not in the history
       opts = as.numeric(found[!found %in% history])
       next_patch = opts[round(runif(1,min = 1, max = length(opts)))]
-      #next_patch = as.numeric(found[!found %in% history][1])
 
-      find_connected(
-        patch_borders = patch_borders,
-        start = next_patch,
-        history = history,
-        found = found,
-        missing = missing,
-        hill = hill,
-        itr_ct = itr_ct,
-        itr_max = itr_max
-      )
+      start = next_patch
+      #next_patch = as.numeric(found[!found %in% history][1])
+     } #while
+      #find_connected(
+      #  patch_borders = patch_borders,
+      #  start = next_patch,
+      #  history = history,
+      #  found = found,
+      #  missing = missing,
+      #  hill = hill,
+      #  itr_ct = itr_ct,
+      #  itr_max = itr_max
+      #)
     }
 
     if (!skip_hillslope_check) {
       # check for segmented hillslopes - this is going to be so slow but oh well
-      cat("Checking for segmented hillslopes")
+      cat("Checking for segmented hillslopes\n")
       segmented_hills = NULL
       segmented_patch_ct = NULL
       segmented_patch_list = list()
@@ -318,7 +330,7 @@ make_flow_list <- function(raw_patch_data,
       ct = 0
 
       # for testing:
-      i = unique(flw_struct$Hill)[4]
+      #i = unique(flw_struct$Hill)[4]
 
       for (i in unique(flw_struct$Hill)) {
         ct = ct + 1
@@ -337,7 +349,6 @@ make_flow_list <- function(raw_patch_data,
           itr_ct = 0,
           itr_max = length(all_patches)
         )
-
         if (!is.null(missing)) {
           segmented_hills = c(segmented_hills, i)
           segmented_patch_ct = c(segmented_patch_ct, length(missing))
@@ -364,7 +375,7 @@ make_flow_list <- function(raw_patch_data,
   # Build list for output. Turn border count into probabilities and lists of neighbors
   lst <- list()
 
-  cat("Buildling flowtable list")
+  cat("Buildling flowtable list\n")
   pb = txtProgressBar(min = 0,max = length(flw_struct$Number),style = 3)
 
   for (i in 1:length(flw_struct$Number)) {

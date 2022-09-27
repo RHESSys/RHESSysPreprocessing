@@ -113,14 +113,14 @@ RHESSysPreprocess = function(template,
     }
   }
 
-  world_gen_out = world_gen(template = template,
-                            worldfile = worldfile,
-                            type = type,
-                            typepars = typepars,
-                            overwrite = overwrite,
-                            header = header,
-                            unique_strata_ID = unique_strata_ID,
-                            asprules = asprules)
+  #world_gen_out = world_gen(template = template,
+  #                          worldfile = worldfile,
+  #                          type = type,
+  #                          typepars = typepars,
+  #                          overwrite = overwrite,
+  #                          header = header,
+  #                          unique_strata_ID = unique_strata_ID,
+  #                          asprules = asprules)
 
   #readin = world_gen_out[[1]]
   #asp_rules = world_gen_out[[2]]

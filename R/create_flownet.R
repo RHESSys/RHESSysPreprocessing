@@ -92,12 +92,14 @@ create_flownet = function(flownet_name,
   } else {
     raw_slope_data = map_list[[unique(cfmaps[cfmaps[, 1] == "slope", 2])]]
   }
+
   if ("z" %in% notamap) {
     raw_patch_elevation_data = raw_patch_data
     raw_patch_elevation_data[!is.na(raw_patch_elevation_data)] = as.numeric(cfmaps[cfmaps[,1] == "z",2])
   } else {
     raw_patch_elevation_data = map_list[[unique(cfmaps[cfmaps[, 1] == "z", 2])]]
   }
+
   cell_length = readmap@grid@cellsize[1]
   # Roads
   raw_road_data = NULL
@@ -120,7 +122,6 @@ create_flownet = function(flownet_name,
   if (!is.null(asprules)) {
     asp_map = template_clean[[which(var_names == "asp_rule")]][3] # get rule map/value
     patch_map = map_df[[cfmaps[cfmaps[,1] == "patch",2]]] # set for use later - overwrite if using mode
-
     if (suppressWarnings(is.na(as.numeric(asp_map)))) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
       asp_mapdata = as.data.frame(readmap)[asp_map]
@@ -177,7 +178,7 @@ create_flownet = function(flownet_name,
   }
 
   # ------------------------------ Make flownet list ------------------------------
-  cat("Building flowtable")
+  cat("Building flowtable\n")
   CF1 = make_flow_list(
     raw_patch_data = raw_patch_data,
     raw_patch_elevation_data = raw_patch_elevation_data,
