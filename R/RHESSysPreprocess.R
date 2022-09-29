@@ -46,6 +46,7 @@ RHESSysPreprocess = function(template,
                              streams = NULL,
                              overwrite = FALSE,
                              roads = NULL,
+                             road_width = NULL,
                              impervious = NULL,
                              roofs = NULL,
                              header = FALSE,
@@ -78,8 +79,8 @@ RHESSysPreprocess = function(template,
     basename = substr(basename, 0, nchar(basename) - 5)
   }
   name_clean = file.path(dirname(name), basename)
-  worldfile = name_clean
-  flownet_name = name_clean
+  worldfile = paste(name_clean, ".world", sep = "")
+  flownet_name = paste(name_clean,".flow", sep = "")
 
   if (!dir.exists(dirname(name))) { # check if output dir exists, menu to create
     t = utils::menu(
@@ -103,24 +104,26 @@ RHESSysPreprocess = function(template,
 
   # ---------- Run world_gen ----------
   cat("Begin world_gen.R\n")
-
+  t = 1
   if (file.exists(worldfile) & overwrite == FALSE) { # check for worldfile overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
       "Worldfile", worldfile, "already exists. Overwrite?"
     )))
     if (t == 2) {
-      stop("RHESSysPreprocess.R exited without completing")
+      #stop("RHESSysPreprocess.R exited without completing")
+      cat("Use existing world file\n")
     }
   }
-
-  world_gen_out = world_gen(template = template,
+  if (t == 1) {
+    world_gen_out = world_gen(template = template,
                             worldfile = worldfile,
                             type = type,
                             typepars = typepars,
-                            overwrite = overwrite,
+                            overwrite = TRUE,
                             header = header,
                             unique_strata_ID = unique_strata_ID,
                             asprules = asprules)
+  }
 
   #readin = world_gen_out[[1]]
   #asp_rules = world_gen_out[[2]]
@@ -128,29 +131,33 @@ RHESSysPreprocess = function(template,
   # ---------- Run create_flownet ----------
   cat("Begin create_flownet.R")
 
+  t = 1
   if (file.exists(flownet_name) & overwrite == FALSE) { # check for flownet overwrite
     t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
       "Flowtable", flownet_name, "already exists. Overwrite?"
     )))
     if (t == 2) {
-      stop("RHESSysPreprocess.R exited without completing")
+      #stop("RHESSysPreprocess.R exited without completing")
+      cat("Use existing flownet file\n")
     }
   }
-
-  create_flownet(flownet_name = flownet_name,
+  if (t == 1) {
+    create_flownet(flownet_name = flownet_name,
                 template = template,
                 type = type,
                 typepars = typepars,
                 asprules = asprules,
                 streams = streams,
-                overwrite = overwrite,
+                overwrite = TRUE,
                 roads = roads,
+                road_width = road_width,
                 impervious = impervious,
                 roofs = roofs,
                 wrapper = wrapper,
                 parallel = parallel,
                 make_stream = make_stream,
                 skip_hillslope_check = skip_hillslope_check)
+  }
 
   # ---------- Run build_meta ----------
   # if (meta) {
