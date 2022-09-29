@@ -25,8 +25,10 @@ find_stream<-function(flw,road_width){
           strm_dist<-c(strm_dist,sqrt((flw[[i]]$Centroidx-flw[[j]]$Centroidx)^2+(flw[[i]]$Centroidy-flw[[j]]$Centroidy)^2))
         }
       }
-      strm_chld<-strm_chld[order(strm_dist)] # order list by 2d distance
-      flw[[i]]$Roadtype<-strm_chld[[1]]  #pick closest one
+      if(length(strm_dist) > 0) {
+        strm_chld<-strm_chld[order(strm_dist)] # order list by 2d distance
+        flw[[i]]$Roadtype<-strm_chld[[1]]  #pick closest one
+      }
     }
   }
   for (i in 1:len_flw){
