@@ -33,6 +33,8 @@
 #' Default is 4.
 #' @param skip_hillslope_check TRUE/FALSE to skip the recursive check for segmented hillslopes. Segmented hillslopes will break the routing, but the
 #' recursive check can trigger various recursion protections when hillslopes are large.
+#' @param convert_aspect TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW West==0) to the 'normal'
+#' format needed for RHESSys (CW Noth==0). Defaults to TRUE.
 #' @param wrapper internal argument to track if being run as all-in-one
 #' @seealso \code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
 #' @author Will Burke
@@ -58,6 +60,7 @@ RHESSysPreprocess = function(template,
                              parallel = TRUE,
                              make_stream = 4,
                              skip_hillslope_check = FALSE,
+                             convert_aspect = TRUE,
                              wrapper = TRUE) {
 
   # ---------- Check Inputs ----------
@@ -120,7 +123,8 @@ RHESSysPreprocess = function(template,
                             overwrite = overwrite,
                             header = header,
                             unique_strata_ID = unique_strata_ID,
-                            asprules = asprules)
+                            asprules = asprules,
+                            convert_aspect = convert_aspect)
 
   #readin = world_gen_out[[1]]
   #asp_rules = world_gen_out[[2]]
