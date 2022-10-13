@@ -84,7 +84,7 @@ RHESSysPreprocess = function(template,
 
   if (!dir.exists(dirname(name))) { # check if output dir exists, menu to create
     t = utils::menu(
-      c("Yes", "No [Exit]"),
+      c("Yes", "No [Skip]"),
       title = paste("Ouput directory path:",dirname(name),"is not valid. Create folder(s)?"))
     if (t == 1) {
       dir.create(dirname(name), recursive = TRUE)
@@ -106,7 +106,7 @@ RHESSysPreprocess = function(template,
   cat("Begin world_gen.R\n")
   t = 1
   if (file.exists(worldfile) & overwrite == FALSE) { # check for worldfile overwrite
-    t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
+    t = utils::menu(c("Yes", "No [Skip]"), title = noquote(paste(
       "Worldfile", worldfile, "already exists. Overwrite?"
     )))
     if (t == 2) {
@@ -133,7 +133,7 @@ RHESSysPreprocess = function(template,
 
   t = 1
   if (file.exists(flownet_name) & overwrite == FALSE) { # check for flownet overwrite
-    t = utils::menu(c("Yes", "No [Exit]"), title = noquote(paste(
+    t = utils::menu(c("Yes", "No [Skip]"), title = noquote(paste(
       "Flowtable", flownet_name, "already exists. Overwrite?"
     )))
     if (t == 2) {

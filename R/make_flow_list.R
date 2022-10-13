@@ -354,12 +354,15 @@ make_flow_list <- function(raw_patch_data,
           segmented_patch_ct = c(segmented_patch_ct, length(missing))
           segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
           segmented_patch_list[[as.character(i)]] = missing
+          options(warn=1)
           warning(
             "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
             "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
             "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
           )
+          #cat("\nHill:",i," num_total_patches:",length(all_patches),"\n")
           print(segmented_df)
+
           #error("")
 
         }
