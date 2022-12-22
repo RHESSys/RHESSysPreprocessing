@@ -121,6 +121,8 @@ make_flow_list <- function(raw_patch_data,
 
   flw_struct <- data.frame(patches,xy_data,patch_mean_elev,patch_mean_slope,patch_landtype,patch_roadtype)
   colnames(flw_struct) <- c("Number","Centroidx","Centroidy","Area","Centroidz","Mean_Slope","Landtype","Roadtype")
+  #12212022LML if patch is both road and stream, set it as stream
+  flw_struct$Roadtype[flw_struct$Roadtype == 1 & flw_struct$Landtype == 1] <- 0
   flw_struct <- cbind(flw_struct,id_data_unique[-5])
 
   # -------------------- find neighbors cell by cell (previously find border row) --------------------
