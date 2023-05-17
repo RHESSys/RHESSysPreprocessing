@@ -79,7 +79,7 @@ Default is 4.}
 \item{skip_hillslope_check}{TRUE/FALSE to skip the recursive check for segmented hillslopes. Segmented hillslopes will break the routing, but the
 recursive check can trigger various recursion protections when hillslopes are large.}
 
-\item{convert_aspect}{TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW West==0) to the 'normal'
+\item{convert_aspect}{TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW EAST==0) to the 'normal'
 format needed for RHESSys (CW Noth==0). Defaults to TRUE.}
 
 \item{wrapper}{internal argument to track if being run as all-in-one}

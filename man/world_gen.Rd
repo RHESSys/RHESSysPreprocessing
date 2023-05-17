@@ -46,7 +46,7 @@ indicating the path to a folder containing the raster files that are referenced 
 
 \item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
 
-\item{convert_aspect}{TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW West==0) to the 'normal'
+\item{convert_aspect}{TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW EAST==0) to the 'normal'
 format needed for RHESSys (CW Noth==0). Defaults to TRUE.}
 
 \item{wrapper}{internal argument to track if being run as all-in-one}
