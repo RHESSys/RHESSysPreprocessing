@@ -281,14 +281,14 @@ world_gen = function(template,
     varname = template_clean[[i]][1]
     return(paste("\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""))
   }
-  #patch
-  pfun = function(i) {
-
-  }
-  #stratum
-  sfun = function(i) {
-
-  }
+  # #patch
+  # pfun = function(i) {
+  #
+  # }
+  # #stratum
+  # sfun = function(i) {
+  #
+  # }
 
 
   print("Writing worldfile",quote = FALSE)
@@ -313,14 +313,6 @@ world_gen = function(template,
   # ----- Basin -----
   for (b in basin) {
     writeChar(paste("\t",b,"\t\t\t","basin_ID\n",sep = ""),con = wcon,eos = NULL)
-
-    # for (i in (level_index[2] + 1):(level_index[3] - 1)) {
-    #   if (length(statevars[[i]][[1]]) > 1) {
-    #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b ,"x"]
-    #   } else {var = statevars[[i]][[1]]}
-    #   varname = template_clean[[i]][1]
-    #   writeChar(paste("\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-    # }
     bout = unlist(lapply((level_index[2] + 1):(level_index[3] - 1), FUN = bfun))
     writeChar(bout,con = wcon,eos = NULL)
 
@@ -334,14 +326,6 @@ world_gen = function(template,
       setTxtProgressBar(pb,progress/length(unique(levels[,3])))
 
       writeChar(paste("\t\t",h,"\t\t\t","hillslope_ID\n",sep = ""),con = wcon,eos = NULL)
-
-      # for (i in (level_index[3] + 1):(level_index[4] - 1)) {
-      #   if (length(statevars[[i]][[1]]) > 1) {
-      #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h ,"x"]
-      #   } else {var = statevars[[i]][[1]]}
-      #   varname = template_clean[[i]][1]
-      #   writeChar(paste("\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-      # }
       hout = unlist(lapply((level_index[3] + 1):(level_index[4] - 1), FUN = hfun))
       writeChar(hout,con = wcon,eos = NULL)
 
@@ -351,14 +335,6 @@ world_gen = function(template,
       # ----- Zone -----
       for (z in zones) {
         writeChar(paste("\t\t\t",z,"\t\t\t","zone_ID\n",sep = ""),con = wcon,eos = NULL)
-
-        # for (i in (level_index[4] + 1):(level_index[5] - 1)) {
-        #   if (length(statevars[[i]][[1]]) > 1) {
-        #     var = statevars[[i]][[1]][statevars[[i]][[1]][2] == b & statevars[[i]][[1]][3] == h & statevars[[i]][[1]][4] == z ,"x"]
-        #   } else {var = statevars[[i]][[1]]}
-        #   varname = template_clean[[i]][1]
-        #   writeChar(paste("\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
-        # }
         zout = unlist(lapply((level_index[4] + 1):(level_index[5] - 1), FUN = zfun))
         writeChar(zout,con = wcon,eos = NULL)
 
@@ -366,13 +342,15 @@ world_gen = function(template,
         if (asp_check) {
           patches = unique(levels[levels$z == z & levels$h == h & levels$b == b, "p"])
           asp_ct = sapply(rulevars, FUN = function(x) ncol(x[[1]]) - 1)
+          names(asp_ct) = gsub("rule_","",names(asp_ct))
           if (length(patches) == 1 & length(asp_ct) == 1){
             total_patches = length(patches) * asp_ct
           } else {
-            total_patches = sum(asp_ct[unique(levels[levels$z == z & levels$h == h & levels$b == b,])[,"a"]])
+            total_patches = sum(asp_ct[names(asp_ct) %in% unique(levels[levels$z == z & levels$h == h & levels$b == b,])[,"a"]])
           }
 
           writeChar(paste("\t\t\t",total_patches,"\t\t\t","num_patches\n",sep = ""),con = wcon,eos = NULL)
+
 
           # ----- Patches (spatial) -----
           for (p in patches) {
