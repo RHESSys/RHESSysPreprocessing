@@ -48,21 +48,15 @@ download_terrain_variables <- function(bbox,
       terrain_raster <- FedData::get_ned(template = bbox,
                                          label = label,
                                          force.redo = TRUE)
-      method = "bilinear"
+      method <- "bilinear"
     }
     if (variable == "nlcd"){
       terrain_raster <- FedData::get_nlcd(template = bbox,
                                           label = label,
                                           year = nlcd_year,
                                           force.redo = TRUE)
-      method = "near"
+      method <- "near"
     }
-  }
-
-  # Outputs from FedData are sometimes RasterLayer, sometimes SpatRaster. Change
-  # all to SpatRaster.
-  if (!class(terrain_raster) == "SpatRaster"){
-    terrain_raster <- terra::rast(terrain_raster)
   }
 
   # -----------------
