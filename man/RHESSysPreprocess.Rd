@@ -7,8 +7,8 @@
 RHESSysPreprocess(
   template,
   name,
-  type = "Raster",
-  typepars,
+  map_dir = NULL,
+  typepars = NULL,
   streams = NULL,
   overwrite = FALSE,
   roads = NULL,
@@ -32,17 +32,14 @@ RHESSysPreprocess(
 \item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:
 <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
-by your chosen method of data input(raster), set using the "type" arguement.}
+by your chosen method of data input(raster).}
 
 \item{name}{The base name (and potentially, path as well) to be used for your ouput files.
 This will create a world file called "<name>.world", and a flow table called "<name>.flow".}
 
-\item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
-in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-ASCII is supported, but 0's cannot be used as values for data.}
+\item{map_dir}{Character string indicating the path to a folder containing the raster files that are referenced by the template.}
 
-\item{typepars}{Parameters needed based on input data type used. If using raster type, typepars should be a string
-indicating the path to a folder containing the raster files that are referenced by the template.}
+\item{typepars}{DEPRECATED arg, now use 'map_dir' to indicate the directory where your raster maps are located.}
 
 \item{streams}{Streams map to be used in building the flowtable.}
 
@@ -89,7 +86,7 @@ Preforms RHESSys Preprocessing, comprised of two main steps: generating a world 
 World file is generated via world_gen.R, and flow table is generated via create_flownet.R.
 }
 \seealso{
-\code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
+\code{\link[RHESSysIOinR]{run_rhessys}}
 }
 \author{
 Will Burke

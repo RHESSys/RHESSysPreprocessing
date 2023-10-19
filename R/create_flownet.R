@@ -10,8 +10,7 @@
 
 create_flownet = function(flownet_name,
                          template = NULL,
-                         type = "raster",
-                         typepars = NULL,
+                         map_dir = NULL,
                          asprules = NULL,
                          streams = NULL,
                          overwrite = FALSE,
@@ -77,9 +76,12 @@ create_flownet = function(flownet_name,
   maps_in = unique(cfmaps[cfmaps[,2] != "none" & !cfmaps[,1] %in% notamap,2])
 
   # ------------------------------ Use GIS_read to get maps ------------------------------
-  readmap = GIS_read(maps_in, type, typepars, map_info = cfmaps)
+  readmap = GIS_read(maps_in = maps_in, map_dir = map_dir, map_info = cfmaps)
 
-  map_list = lapply(readmap@data, matrix, nrow = readmap@grid@cells.dim[1], ncol = readmap@grid@cells.dim[2])
+  # map_list = lapply(readmap@data, matrix, nrow = readmap@grid@cells.dim[1], ncol = readmap@grid@cells.dim[2])
+  map_list = lapply(readmap, matrix, nrow = ncol(readmap), ncol = nrow(readmap))
+  names(map_list) = names(readmap)
+
   raw_patch_data = map_list[[cfmaps[cfmaps[, 1] == "patch", 2]]]
   raw_hill_data = map_list[[cfmaps[cfmaps[, 1] == "hillslope", 2]]]
   raw_basin_data = map_list[[cfmaps[cfmaps[, 1] == "basin", 2]]]
@@ -98,7 +100,7 @@ create_flownet = function(flownet_name,
   } else {
     raw_patch_elevation_data = map_list[[unique(cfmaps[cfmaps[, 1] == "z", 2])]]
   }
-  cell_length = readmap@grid@cellsize[1]
+  cell_length = terra::res(readmap)[1]
   # Roads
   raw_road_data = NULL
   if (!is.null(roads)) {raw_road_data =  map_list[[cfmaps[cfmaps[,1] == "roads",2]]]}
@@ -109,12 +111,7 @@ create_flownet = function(flownet_name,
   raw_impervious_data = NULL
   if (!is.null(impervious)) {raw_impervious_data =  map_list[[cfmaps[cfmaps[,1] == "impervious",2]]]}
 
-  # TODO - this should get cleaned up eventually - there's at least 2 different versions of the maps being used
-  if (length(readmap@data[,1]) == 1) {
-    map_df = as.data.frame(readmap@data) # works for 1 patch world
-  } else {
-    map_df = as.data.frame(readmap) #make data frame for ease of use
-  }
+  map_df = as.data.frame(readmap)
 
   # read aspatial rules if needed
   if (!is.null(asprules)) {
@@ -123,7 +120,7 @@ create_flownet = function(flownet_name,
 
     if (suppressWarnings(is.na(as.numeric(asp_map)))) { # if it's a map
       asp_map = gsub(".tif|.tiff","",asp_map)
-      asp_mapdata = as.data.frame(readmap)[asp_map]
+      asp_mapdata = map_df[asp_map]
 
       # --- doing manipulation of the asp map if needed here ---
       if (template_clean[[which(var_names == "asp_rule")]][2] == "mode") {

@@ -55,7 +55,7 @@ type = "raster"
 ```
 3. Set `typepars` to the path of the folder containing your rasters
 ```{r}
-typepars = "spatial_data"
+map_dir = "spatial_data"
 ```
 
 ## Template
@@ -117,8 +117,7 @@ Finally, run the function.  Depending on size, it may take a few mintues.
 RHESSysPreprocess(
   template = template,
   name = name,
-  type = type,
-  typepars = typepars,
+  map_dir = map_dir,
   streams = streams,
   overwrite = overwrite,
   header = header)

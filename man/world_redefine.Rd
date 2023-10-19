@@ -4,7 +4,7 @@
 \alias{world_redefine}
 \title{World Redefine}
 \usage{
-world_redefine(template, name, type = "Raster", typepars, overwrite = FALSE)
+world_redefine(template, name, map_dir, overwrite = FALSE)
 }
 \arguments{
 \item{template}{Template file used to generate redefine worldfile for RHESSys. Use "-9999" to retain
@@ -15,12 +15,7 @@ by your chosen method of data input(GRASS or raster), set using the "type" argue
 
 \item{name}{Name and path of redefine worldfile to be created.}
 
-\item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
-in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-ASCII is supported, but 0's cannot be used as values for data. "GRASS" will attempt to autodetect the version of
-GRASS GIS being used (6.x or 7.x).  GRASS GIS type can also be set explicitly to "GRASS6" or "GRASS7".}
-
-\item{typepars}{Parameters needed based on input data type used. If using raster type, typepars should be a string
+\item{map_dir}{Parameters needed based on input data type used. If using raster type, typepars should be a string
 indicating the path to a folder containing the raster files that are referenced by the template.
 For GRASS GIS type, typepars is a vector of 5 character strings. GRASS GIS parameters: gisBase, home, gisDbase, location, mapset.
 Example parameters are included in an example script included in this package. See initGRASS help

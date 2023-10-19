@@ -5,14 +5,11 @@
 #' @param template Template file used to generate worldfile for RHESSys. Generic strucutre is:
 #' <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 #' <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
-#' by your chosen method of data input(raster), set using the "type" arguement.
+#' by your chosen method of data input(raster).
 #' @param name The base name (and potentially, path as well) to be used for your ouput files.
 #' This will create a world file called "<name>.world", and a flow table called "<name>.flow".
-#' @param type Input file type to be used. Default is raster. "Raster" type will use rasters
-#' in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-#' ASCII is supported, but 0's cannot be used as values for data.
-#' @param typepars Parameters needed based on input data type used. If using raster type, typepars should be a string
-#' indicating the path to a folder containing the raster files that are referenced by the template.
+#' @param map_dir Character string indicating the path to a folder containing the raster files that are referenced by the template.
+#' @param typepars DEPRECATED arg, now use 'map_dir' to indicate the directory where your raster maps are located.
 #' @param streams Streams map to be used in building the flowtable.
 #' @param overwrite Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.
 #' @param roads Roads map, an optional input for flowtable creation.
@@ -36,15 +33,15 @@
 #' @param convert_aspect TRUE/FALSE if the input aspect map data should be converted fom GRASS GIS format (CCW EAST==0) to the 'normal'
 #' format needed for RHESSys (CW Noth==0). Defaults to TRUE.
 #' @param wrapper internal argument to track if being run as all-in-one
-#' @seealso \code{\link[raster]{raster}}, \code{\link[RHESSysIOinR]{run_rhessys}}
+#' @seealso \code{\link[RHESSysIOinR]{run_rhessys}}
 #' @author Will Burke
 #' @export
 
 # ---------- Function start ----------
 RHESSysPreprocess = function(template,
                              name,
-                             type = 'Raster',
-                             typepars,
+                             map_dir = NULL,
+                             typepars = NULL,
                              streams = NULL,
                              overwrite = FALSE,
                              roads = NULL,
@@ -66,6 +63,16 @@ RHESSysPreprocess = function(template,
   # ---------- Check Inputs ----------
   if (!file.exists(template)) { # check if template exists
     cat("Template does not exist or is not located at specified path:",template)
+  }
+
+  if (is.null(map_dir) & is.null(typepars)) {
+    stop("Must have a map directory indicated via 'map_dir' argument. This is the location where your raster maps referenced in your template are located.")
+  }
+  if (!is.null(typepars)) {
+    cat("WARNING: 'typepars' is a deprecated input argument, has been replaced by 'map_dir', and may be deleted.")
+    if (is.null(map_dir)) {
+      map_dir = typepars
+    }
   }
 
   basename = basename(name) # check Name
@@ -96,10 +103,6 @@ RHESSysPreprocess = function(template,
     }
   }
 
-  if (!type %in% c("Raster", "RASTER", "raster", "GRASS", "GRASS6", "GRASS7")) { # check if type is valid
-    stop(noquote(paste("Type '", type, "' not recognized.", sep = "")))
-  }
-
   if (!is.logical(overwrite)) { # check overwrite type
     stop("Overwrite must be logical")
   }
@@ -118,8 +121,7 @@ RHESSysPreprocess = function(template,
 
   world_gen_out = world_gen(template = template,
                             worldfile = worldfile,
-                            type = type,
-                            typepars = typepars,
+                            map_dir = map_dir,
                             overwrite = overwrite,
                             header = header,
                             unique_strata_ID = unique_strata_ID,
@@ -143,8 +145,7 @@ RHESSysPreprocess = function(template,
 
   create_flownet(flownet_name = flownet_name,
                 template = template,
-                type = type,
-                typepars = typepars,
+                map_dir = map_dir,
                 asprules = asprules,
                 streams = streams,
                 overwrite = overwrite,
@@ -163,8 +164,7 @@ RHESSysPreprocess = function(template,
   #     world = worldfile,
   #     flow = flownet_name,
   #     template = template,
-  #     type = type,
-  #     typepars = typepars,
+  #     map_dir = map_dir,
   #     cf_maps = readin,
   #     streams = streams,
   #     roads = roads,
@@ -176,7 +176,7 @@ RHESSysPreprocess = function(template,
 
   if (fire_grid_out) {
     cat("Writing fire grid files")
-    write_fire_grids(name = name, template = template, map_dir = typepars, seq_patch_IDs = seq_patch_IDs)
+    write_fire_grids(name = name, template = template, map_dir = map_dir, seq_patch_IDs = seq_patch_IDs)
   }
 
 

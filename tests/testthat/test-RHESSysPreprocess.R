@@ -1,10 +1,15 @@
 #context("RHESSys-Preprocess testing")
 library(RHESSysPreprocessing)
 
+# ---------- TEMPORARY ----------
+# library(testthat)
+# setwd("~/Repos/RHESSysPreprocessing/")
+# map_dir = "inst/extdata/"
+# --------------------
+
 RHESSysPreprocess(template = system.file("extdata", "test2.template", package = "RHESSysPreprocessing"),
                   name = file.path(system.file("extdata", package = "RHESSysPreprocessing"), "test_out"),
-                  type = "raster",
-                  typepars = system.file("extdata", package = "RHESSysPreprocessing"),
+                  map_dir = system.file("extdata", package = "RHESSysPreprocessing"),
                   streams = "streams",
                   overwrite = T)
 

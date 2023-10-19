@@ -10,8 +10,7 @@
 
 world_gen = function(template,
                      worldfile,
-                     type = 'Raster',
-                     typepars,
+                     map_dir,
                      overwrite = FALSE,
                      header = FALSE,
                      unique_strata_ID = TRUE,
@@ -70,24 +69,31 @@ world_gen = function(template,
   # ------------------------------------------------------
   read_maps = GIS_read(
     maps_in = maps_in,
-    type = type,
-    typepars = typepars,
+    map_dir = map_dir,
     map_info = map_info,
     seq_patch_IDs = seq_patch_IDs,
     output_patch_map = output_patch_map
   )
 
-  # process map data
-  if (length(read_maps@data[,1]) == 1) {
-    map_df = as.data.frame(read_maps@data) # works for 1 patch world
-  } else {
-    map_df = as.data.frame(read_maps) #make data frame for ease of use
-  }
-
-  cell_len = read_maps@grid@cellsize[1] # cell length for output
-  cellarea = read_maps@grid@cellsize[1] * read_maps@grid@cellsize[2] # get cell area - need for area operator
+  map_df = as.data.frame(read_maps)
+  cell_len = terra::res(read_maps)[1] # cell length for output
+  cellarea = terra::res(read_maps)[1] * terra::res(read_maps)[2] # get cell area - need for area operator
   cellarea = rep(cellarea, length(map_df[,1]))
-  rm(read_maps) # read_maps may be very large if maps are large
+
+  # TODO  - delete when confident about alternative format
+  # if (class(readmap)[1] == "SpatialGridDataFrame") {
+  #   # process map data
+  #   if (length(read_maps@data[,1]) == 1) {
+  #     map_df = as.data.frame(read_maps@data) # works for 1 patch world
+  #   } else {
+  #     map_df = as.data.frame(read_maps) #make data frame for ease of use
+  #   }
+  #
+  #   cell_len = read_maps@grid@cellsize[1] # cell length for output
+  #   cellarea = read_maps@grid@cellsize[1] * read_maps@grid@cellsize[2] # get cell area - need for area operator
+  #   cellarea = rep(cellarea, length(map_df[,1]))
+  #   rm(read_maps) # read_maps may be very large if maps are large
+  # }
 
   # check the maps are there
   # if (any(!map_info[,"Map"] %in% names(map_df))) {
