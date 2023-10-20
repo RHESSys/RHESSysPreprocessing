@@ -62,7 +62,7 @@ download_terrain_variables <- function(bbox,
   # -----------------
   # Reproject
 
-  terrain_raster_reproject <- terra::project(terrain_raster, y = crs(paste0("epsg:", proj_epsg)))
+  terrain_raster_reproject <- terra::project(terrain_raster, y = terra::crs(paste0("epsg:", proj_epsg)))
 
   # -----------------
   # Change resolution

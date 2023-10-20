@@ -45,7 +45,7 @@ make_landscape_rasters <- function(dem,
                                    patch_method = "simple"){
 
   # Check that whitebox is loaded
-  if (check_whitebox_binary() == FALSE){stop("Whitebox not detected.")}
+  if (whitebox::check_whitebox_binary() == FALSE){stop("Whitebox not detected.")}
 
   # Check that work folder exists. If it doesn't, then make it, if possible.
   if(!dir.exists(work_folder)){dir.create(work_folder)}

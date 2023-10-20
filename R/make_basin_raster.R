@@ -67,7 +67,7 @@ make_basin_raster <- function(work_folder,
       # Set crs as WGS84 (EPSG: 4326)
       sf::st_crs(pour_point) <- 4326
       # Change projection to UTM
-      pour_point <- sf::st_transform(pour_point, crs = st_crs(proj_epsg))
+      pour_point <- sf::st_transform(pour_point, crs = sf::st_crs(proj_epsg))
       # Save pour point so it can be imported to whitebox functions
       pour_point_file <- file.path(work_folder, "pour_point.shp")
       sf::st_write(pour_point, pour_point_file, delete_dsn = TRUE)
@@ -108,9 +108,9 @@ make_basin_raster <- function(work_folder,
                                         snap_dist = snap_dist)
 
   # Create basin file
-  wbt_watershed(d8_pntr = d8_pointer,
-                pour_pts = pour_point_snapped,
-                output = basin)
+  whitebox::wbt_watershed(d8_pntr = d8_pointer,
+                          pour_pts = pour_point_snapped,
+                          output = basin)
 
   # -----------------
   # Save a map showing pour point adjustment
