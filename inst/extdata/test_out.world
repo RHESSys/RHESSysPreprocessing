@@ -24,7 +24,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			7.659833			slope
-			253.8108			aspect
+			196.1892			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -185,7 +185,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			10.74374			slope
-			261.1582			aspect
+			188.8418			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -346,7 +346,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			13.77801			slope
-			279.7824			aspect
+			170.2176			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -507,7 +507,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			9.190456			slope
-			281.8887			aspect
+			168.1113			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -668,7 +668,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			12.25939			slope
-			274.3987			aspect
+			175.6013			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -829,7 +829,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			13.36138			slope
-			285.2551			aspect
+			164.7449			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -990,7 +990,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			13.21378			slope
-			297.4744			aspect
+			152.5256			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -1151,7 +1151,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			13.45612			slope
-			277.0013			aspect
+			172.9987			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon
@@ -1312,7 +1312,7 @@
 			1			zone_parm_ID
 			900.1151			area
 			10.88939			slope
-			274.9697			aspect
+			175.0303			aspect
 			1			precip_lapse_rate
 			5			e_horizon
 			12			w_horizon

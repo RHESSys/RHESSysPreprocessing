@@ -23,8 +23,7 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   # could kinda skip this but this makes sure the same cropping/clipping happens the same as it does for the worldfile
   maps_in = GIS_read(
     maps_in = unique(maps[, 2]),
-    type = "raster",
-    typepars = map_dir,
+    map_dir = map_dir,
     map_info = maps,
     seq_patch_IDs = seq_patch_IDs,
     output_patch_map = FALSE
@@ -33,11 +32,11 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   #maps_rast = methods::as(maps_in, "RasterStack")
 
   # write.asciigrid needs even cell sizes and projections can lead to very slight differences
-  if (length(unique(maps_in@grid@cellsize)) != 1) {
-    maps_in@grid@cellsize = round(maps_in@grid@cellsize, 5)
-    if (length(unique(maps_in@grid@cellsize)) != 1) {
+  if (length(unique(terra::res(maps_in))) != 1) {
+    terra::res(maps_in) = round(terra::res(maps_in), 5)
+    if (length(unique(terra::res(maps_in))) != 1) {
       warning("Cell sizes are not square - using mean of cell sizes so write.asciigrid will work")
-      maps_in@grid@cellsize = mean(maps_in@grid@cellsize)
+      terra::res(maps_in) = mean(terra::res(maps_in))
     }
   }
 
@@ -48,12 +47,14 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   file_types = c("dem", "hillslope", "zone", "patch")
   files_out = file.path(map_dir, file_types)
 
-  write_rast = function(X) {
-    write.asciigrid(
-      x = maps_in[files_in[X]],
-      fname = files_out[X]
-    )
-  }
+  stop("function broken -- need to replcae sp function write.asciigrid with terra or sf version. line 52 in write_fire_grids.R")
+
+  # write_rast = function(X) {
+  #   write.asciigrid(
+  #     x = maps_in[files_in[X]],
+  #     fname = files_out[X]
+  #   )
+  # }
   shh = lapply(seq_along(files_out), write_rast)
 
   linesin = lapply(files_out, readLines)

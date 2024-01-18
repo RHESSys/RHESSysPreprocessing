@@ -28,25 +28,9 @@ setwd("~/Documents/MyProject")
 
 # Spatial Data
 # ------------
-# You will need to select your method of geospatial data input.  This is the means by which the spatial data referenced in your template.
-
-# Currently there are a two methods:
-# 1) Raster - spatial data in any raster format supported by R GDAL will be read in from a folder.
-# 2) < NO LONGER BEING ACTIVELY SUPPORTED> GRASS GIS > - GRASS 6 or 7, spatial data will be imported from the specified GRASS location and mapset.
-
-# NOTES:
-# - Due to a variety of factors, spatial data import via the raster method is both more robust and faster.
-# - Regardless of import method, good practice for spatial data should be followed.
-# - Input data should have the same projections, extents, and cell sizes. THIS MAY RESULT IN ERRORS IF NOT FOLLOWED.
-
-# Raster
-# ------
-# To import spatial data from a folder of rasters:
-# 1) Set type to "raster"
-type = "raster"
-# 2) Set typepars to the path of the folder containing your rasters
-typepars = "spatial_data"
-
+# Set map_dir to the path of the folder containing your rasters
+map_dir = "spatial_data"
+# OLD deprecated: typepars = "spatial_data"
 
 # Template
 # --------
@@ -103,8 +87,7 @@ header = FALSE
 RHESSysPreprocess(
   template = template,
   name = name,
-  type = type,
-  typepars = typepars,
+  map_dir = map_dir,
   streams = streams,
   overwrite = overwrite,
   header = header)

@@ -6,8 +6,7 @@
 \usage{
 GIS_read(
   maps_in,
-  type = "raster",
-  typepars,
+  map_dir,
   map_info = NULL,
   seq_patch_IDs = FALSE,
   output_patch_map = FALSE
@@ -16,9 +15,7 @@ GIS_read(
 \arguments{
 \item{maps_in}{Character vector of maps to be read in by the chosen method.}
 
-\item{type}{Legacy option - now ONLY accepts "raster" or "Raster"}
-
-\item{typepars}{The file path to a folder containing the rasters specified via template or other args. TO BE RENAMED TO MAP_DIR.}
+\item{map_dir}{The file path to a folder containing the rasters specified via template or other args.}
 
 \item{map_info}{Two column matrix of map types and names, output of `read_template()``}
 
@@ -27,10 +24,10 @@ GIS_read(
 \item{output_patch_map}{TRUE/FALSE should the new patch map with sequential IDs be output to file.}
 }
 \value{
-Returns a LargeSpatialGridDataFrame containing all the maps indicated in read_in
+Returns a multi-layer SpatRaster containing all the maps indicated in read_in
 }
 \description{
-Read in GIS maps. Returns a spatial data frame containing all maps. 2/14/18.
+Read in GIS maps for use in RHESSys. Creates a unified SpatRaster of all input maps. Updated 10/17/23.
 }
 \author{
 Will Burke

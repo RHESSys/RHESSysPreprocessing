@@ -7,8 +7,7 @@
 world_gen(
   template,
   worldfile,
-  type = "Raster",
-  typepars,
+  map_dir,
   overwrite = FALSE,
   header = FALSE,
   unique_strata_ID = TRUE,
@@ -23,16 +22,11 @@ world_gen(
 \item{template}{Template file used to generate worldfile for RHESSys. Generic strucutre is:
 <state variable> <operator> <value/map>. Levels are difined by lines led by "_", structured
 <levelname> <map> <count>. Whitespace and tabs are ignored.  Maps referred to must be supplied
-by your chosen method of data input(raster), set using the "type" arguement.}
+by your chosen method of data input(raster).}
 
 \item{worldfile}{Name and path of worldfile to be created.}
 
-\item{type}{Input file type to be used. Default is raster. "Raster" type will use rasters
-in GeoTiff or equivalent format (see Raster package), with file names  matching those indicated in the template.
-ASCII is supported, but 0's cannot be used as values for data.}
-
-\item{typepars}{Parameters needed based on input data type used. If using raster type, typepars should be a string
-indicating the path to a folder containing the raster files that are referenced by the template.}
+\item{map_dir}{Character string indicating the path to a folder containing the raster files that are referenced by the template.}
 
 \item{overwrite}{Overwrite existing worldfile. FALSE is default and prompts a menu if worldfile already exists.}
 

@@ -9,8 +9,7 @@ build_meta(
   world = NULL,
   flow = NULL,
   template,
-  type,
-  typepars,
+  map_dir,
   cf_maps,
   streams = NULL,
   roads = NULL,
@@ -28,9 +27,7 @@ build_meta(
 
 \item{template}{template}
 
-\item{type}{type of spatial input}
-
-\item{typepars}{params for spatial input}
+\item{map_dir}{dir for spatial input}
 
 \item{cf_maps}{additional maps input for flownet creation}
 

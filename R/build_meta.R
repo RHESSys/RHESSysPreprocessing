@@ -5,8 +5,7 @@
 #' @param world worldfile
 #' @param flow flowtable
 #' @param template template
-#' @param type type of spatial input
-#' @param typepars params for spatial input
+#' @param map_dir dir for spatial input
 #' @param cf_maps additional maps input for flownet creation
 #' @param streams stream map
 #' @param roads roads map
@@ -23,8 +22,7 @@ build_meta = function(name,
                       world = NULL,
                       flow = NULL,
                       template,
-                      type,
-                      typepars,
+                      map_dir,
                       cf_maps,
                       streams = NULL,
                       roads = NULL,
@@ -46,13 +44,7 @@ build_meta = function(name,
     "Author",
     "Computer",
     "Datetime",
-    "GIS Type",
     "Map Path",
-    "gisBase",
-    "home",
-    "gisDbase",
-    "location",
-    "mapset",
     "world",
     "basin",
     "zone",
@@ -93,18 +85,7 @@ build_meta = function(name,
   meta_out["Worldfile",2] = world
   meta_out["Template",2] = template
   meta_out["Flowtable",2] = flow
-
-  if (type == "Raster" | type == "raster" | type == "RASTER") {
-    meta_out["GIS Type", 2] = "Raster"
-    meta_out["Map Path", 2] = paste(getwd(),typepars,sep="")
-  } else{
-    meta_out["GIS Type", 2] = type
-    meta_out["gisBase", 2] = typepars[1]
-    meta_out["home", 2] = typepars[2]
-    meta_out["gisDbase", 2] = typepars[3]
-    meta_out["location", 2] = typepars[4]
-    meta_out["mapset", 2] = typepars[5]
-  }
+  meta_out["Map Path", 2] = paste(getwd(),map_dir,sep="")
 
   if(!is.null(roads)){meta_out["roads",2] = roads}
   if(!is.null(impervious)){meta_out["impervious",2] = impervious}
