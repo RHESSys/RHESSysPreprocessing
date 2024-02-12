@@ -31,7 +31,7 @@ clip_landscape_rasters_by_basin <- function(work_folder,
 
     raster_to_clip <- terra::rast(file.path(work_folder, rasters_to_clip[x]))
     clipped_raster <- terra::mask(raster_to_clip, mask = basin)
-    terra::writeRaster(clipped_raster, filename = file.path(work_folder, names_output[x]), overwrite=TRUE)
+    terra::writeRaster(clipped_raster, filename = file.path(work_folder, paste0(names_output[x], ".tif")), overwrite=TRUE)
 
     return(clipped_raster)
   })

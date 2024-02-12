@@ -101,6 +101,11 @@ make_landscape_rasters <- function(dem,
                                 output = file.path(work_folder, "streams_landscape.tif"),
                                 threshold = stream_threshold)
 
+  # Subbasins
+  whitebox::wbt_subbasins(d8_pntr = file.path(work_folder, "d8_pointer_landscape.tif"),
+                          streams = file.path(work_folder, "streams_landscape.tif"),
+                          output = file.path(work_folder, "subbasin_landscape.tif"))
+
   # -----------------
   # Create patch maps
 

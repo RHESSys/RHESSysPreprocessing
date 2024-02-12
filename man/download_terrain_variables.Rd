@@ -10,9 +10,10 @@ download_terrain_variables(
   data_source,
   variable,
   label,
+  res_ned = "1",
   nlcd_year = NULL,
-  res = NULL,
-  res_example = NULL,
+  res_final = NULL,
+  res_final_example = NULL,
   output_file
 )
 }
@@ -30,14 +31,18 @@ and "nlcd".}
 
 \item{label}{The name of the study area.}
 
+\item{res_ned}{The resolution of the NED product. '1' indicates the 1 arc-second
+(~30 m) NED (the default). A '13' indicates the 1/3 arc-second (~10 m)
+dataset.}
+
 \item{nlcd_year}{Year of nlcd data. Acceptable values are 2019 (default),
 2016, 2011, 2008, 2006, 2004, and 2001.}
 
-\item{res}{Desired resolution in meters.}
+\item{res_final}{Desired final resolution in meters.}
 
-\item{res_example}{An spatraster with desired resolution for the downloaded
+\item{res_final_example}{An spatraster with desired resolution for the downloaded
 data to be resampled to. In many cases, this will be same raster as bbox.
-If both `res` and `res_example` are not null, `res_example` takes
+If both `res_final` and `res_final_example` are not null, `res_final_example` takes
 precedent.}
 
 \item{output_file}{Path and file name of raster to be saved.}

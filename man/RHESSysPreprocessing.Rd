@@ -2,6 +2,7 @@
 % Please edit documentation in R/RHESSysPreprocessing.R
 \docType{package}
 \name{RHESSysPreprocessing}
+\alias{RHESSysPreprocessing-package}
 \alias{RHESSysPreprocessing}
 \title{RHESSysPreprocessing}
 \description{
