@@ -4,10 +4,19 @@
 \alias{read_world}
 \title{read_world}
 \usage{
-read_world(worldfile)
+read_world(worldfile, hill_col = F, zone_col = F, patch_col = F)
 }
 \arguments{
 \item{worldfile}{Source worldfile}
+
+\item{hill_col}{TRUE/FALSE if a column of only hillslope IDs should be added,
+for the hillslope level and levels below (zone, patch, canopy_strata)}
+
+\item{zone_col}{TRUE/FALSE if a column of only zone IDs should be added,
+for the zone level and levels below (patch, canopy_strata)}
+
+\item{patch_col}{TRUE/FALSE if a column of only patch IDs should be added,
+for the patch level and levels below (canopy_strata)}
 }
 \description{
 Reads a worldfile

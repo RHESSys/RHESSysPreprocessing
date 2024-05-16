@@ -18,6 +18,8 @@
 #' @author Will Burke
 #' @importFrom utils txtProgressBar
 #' @importFrom utils setTxtProgressBar
+#' @importFrom igraph make_graph
+#' @importFrom igraph clusters
 
 make_flow_list <- function(raw_patch_data,
                            raw_patch_elevation_data,
@@ -47,7 +49,7 @@ make_flow_list <- function(raw_patch_data,
   options(scipen = 999) # IF DEBUGGING YOU WILL HAVE ERRORS ON LARGE BASINS WITHOUT THIS - comes from numeric to character conversion
 
   # -------------------- Build unique patch IDs --------------------
-  cat("Generating unique patch IDs")
+  cat("Generating unique patch IDs\n")
 
   id_data = data.frame("Basin" = as.vector(raw_basin_data[!is.na(raw_basin_data)]),
                        "Hill" = as.vector(raw_hill_data[!is.na(raw_basin_data)]),
@@ -128,7 +130,7 @@ make_flow_list <- function(raw_patch_data,
   # patch_borders is an array, initailly 0 but will be filled with the number of times patch i
   # touches patch j. the diagonal will be the number of times patch i touches anything.
   # -------------------- D8 neighbor search and border count --------------------
-  cat("Finding patch neighbors")
+  cat("Finding patch neighbors\n")
 
   # new - list instead of matrix
   patch_borders = list(list("Total" = 0))[rep(1,length(patches))]
@@ -250,7 +252,7 @@ make_flow_list <- function(raw_patch_data,
     }
     if (!is.null(no_stream_fix)) {
       cat(paste(length(no_stream_fix),"hillslopes had their lowest elevation patches set to streams, at a max distance from existing streams of",
-                  max(print_dist_fix),"cell lengths."))
+                  max(print_dist_fix),"cell lengths.\n"))
     }
     if (!is.null(no_stream)) { # output hillslopes that weren't corrected
       cat("The following outlet patches were outside of the",make_stream,"cell length distance threshold set by the 'make_stream' argument.")
@@ -258,55 +260,50 @@ make_flow_list <- function(raw_patch_data,
       stop(noquote("The above hillslopes must have stream patch outlets, either increase the value of the 'make_stream' argument, or fix via GIS."))
     }
 
+    # ==================== Recursive connection search function ====================
+    # find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill, itr_ct = NULL, itr_max = 10000) {
+    #   # add start to found, only for first itr tho
+    #   if (is.null(history)) {
+    #     found = start
+    #   }
+    #   # update history to include current patch
+    #   history = c(history, start)
+    #   # find the neighbors
+    #   neighbors = names(patch_borders[[start]])[-1][names(patch_borders[[start]])[-1] %in% flw_struct[flw_struct$Hill == hill, "Number"]]
+    #   neighbors = as.numeric(neighbors)
+    #   # update the found vector to include those neighbors
+    #   found = c(found, neighbors)
+    #   # remove the found from missing
+    #   missing = missing[!missing %in% found]
+    #   # check if we have any missing left
+    #   if (length(missing) == 0) {return(NULL)}
+    #   # if our history is the same as the patches we've found, then give up there's a segmented patch
+    #   if (all(found %in% history)) {return(missing)}
+    #   if (!is.null(itr_ct)) {
+    #     itr_ct = itr_ct + 1
+    #     if (itr_ct == itr_max) {
+    #       cat("Reached iteration limit of ",itr_max)
+    #       return(list(missing, found, history, start))
+    #     }
+    #   }
+    #   # if we haven't found everything, keep iterating through found patches not in the history
+    #   opts = as.numeric(found[!found %in% history])
+    #   next_patch = opts[round(runif(1,min = 1, max = length(opts)))]
+    #   #next_patch = as.numeric(found[!found %in% history][1])
+    #
+    #   find_connected(
+    #     patch_borders = patch_borders,
+    #     start = next_patch,
+    #     history = history,
+    #     found = found,
+    #     missing = missing,
+    #     hill = hill,
+    #     itr_ct = itr_ct,
+    #     itr_max = itr_max
+    #   )
+    # }
 
-    find_connected = function(patch_borders, start, history = NULL, found = NULL, missing, hill, itr_ct = NULL, itr_max = 10000) {
-      # add start to found, only for first itr tho
-      if (is.null(history)) {
-        found = start
-      }
-      # update history to include current patch
-      history = c(history, start)
-      # find the neighbors
-      neighbors = names(patch_borders[[start]])[-1][names(patch_borders[[start]])[-1] %in% flw_struct[flw_struct$Hill == hill, "Number"]]
-      neighbors = as.numeric(neighbors)
-      # update the found vector to include those neighbors
-      found = c(found, neighbors)
-      # remove the found from missing
-      missing = missing[!missing %in% found]
-      # check if we have any missing left
-      if (length(missing) == 0) {
-        return(NULL)
-      }
-      # if our history is the same as the patches we've found, then give up there's a segmented patch
-      if (all(found %in% history)) {
-        return(missing)
-      }
-
-      if (!is.null(itr_ct)) {
-        itr_ct = itr_ct + 1
-        if (itr_ct == itr_max) {
-          cat("Reached iteration limit of ",itr_max)
-          return(list(missing, found, history, start))
-        }
-      }
-
-      # if we haven't found everything, keep iterating through found patches not in the history
-      opts = as.numeric(found[!found %in% history])
-      next_patch = opts[round(runif(1,min = 1, max = length(opts)))]
-      #next_patch = as.numeric(found[!found %in% history][1])
-
-      find_connected(
-        patch_borders = patch_borders,
-        start = next_patch,
-        history = history,
-        found = found,
-        missing = missing,
-        hill = hill,
-        itr_ct = itr_ct,
-        itr_max = itr_max
-      )
-    }
-
+    # ==================== Check hillslopes for connectivity ====================
     if (!skip_hillslope_check) {
       # check for segmented hillslopes - this is going to be so slow but oh well
       cat("Checking for segmented hillslopes")
@@ -317,38 +314,58 @@ make_flow_list <- function(raw_patch_data,
       pb = txtProgressBar(min = 0,max = length(unique(flw_struct$Hill)),style = 3)
       ct = 0
 
+      # ==================== TESTING ====================
       # for testing:
-      i = unique(flw_struct$Hill)[4]
+      # i = unique(flw_struct$Hill)[2]
+      # min_patch = flw_struct[flw_struct$Hill == i,][min_hill_patch[min_hill_patch$hillID == i, "patch_ind"],]
+      # ==================== TESTING END ====================
 
       for (i in unique(flw_struct$Hill)) {
         ct = ct + 1
         setTxtProgressBar(pb,ct)
-        # start from outlet
+        # if trouble shooting - use this patch id to determine which cluster is the 'connected' one to the stream
         min_patch = flw_struct[flw_struct$Hill == i,][min_hill_patch[min_hill_patch$hillID == i, "patch_ind"],]
-        all_patches = flw_struct[flw_struct$Hill == i, "Number"]
+        # all_patches = flw_struct[flw_struct$Hill == i, "Number"]
 
-        missing = find_connected(
-          patch_borders = patch_borders,
-          start = min_patch$Number,
-          history = NULL,
-          found = NULL,
-          missing = all_patches,
-          hill = i,
-          itr_ct = 0,
-          itr_max = length(all_patches)
-        )
+        # subset patches for each hillslope, get the subset of border obj
+        patches_subset = flw_struct[flw_struct$Hill == i, c("Number","Centroidz")]
+        patches_subset$vertex_num = seq_along(patches_subset$Number)
+        border_sub = lapply(patch_borders[patches_subset$Number], function(X) {Y=names(X)[-1];return(Y)})
+        # create obj for input as edges in igraph
+        make_edges_obj = function(X,Y){c(rbind(rep(X,length(Y)), Y))}
+        patch_edges = mapply(make_edges_obj,patches_subset$Number,border_sub)
+        patch_edges = unlist(patch_edges)
 
-        if (!is.null(missing)) {
-          segmented_hills = c(segmented_hills, i)
-          segmented_patch_ct = c(segmented_patch_ct, length(missing))
-          segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
-          segmented_patch_list[[as.character(i)]] = missing
-          warning(
-            "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
-            "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
-            "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
-          )
-          print(segmented_df)
+        # Create an empty graph
+        G = igraph::make_graph(edges = patch_edges)
+        # Find connected components
+        connected_components <- igraph::clusters(G)$membership
+        # Identify disconnected patches
+        disconnected_patches <- names(connected_components)[connected_components != 1]
+        # missing = find_connected(
+        #   patch_borders = patch_borders,
+        #   start = min_patch$Number,
+        #   history = NULL,
+        #   found = NULL,
+        #   missing = all_patches,
+        #   hill = i,
+        #   itr_ct = 0,
+        #   itr_max = length(all_patches)
+        # )
+
+        if (length(disconnected_patches) > 0) {
+          # segmented_hills = c(segmented_hills, i)
+          # segmented_patch_ct = c(segmented_patch_ct, length(missing))
+          # segmented_df = data.frame("Hillslope ID" = segmented_hills, "Segmented patch count" = segmented_patch_ct)
+          # segmented_patch_list[[as.character(i)]] = missing
+          # warning(
+          #   "One or more hillslopes are disconnected with segmented segmented patches and do not reach the outlet patch.\n",
+          #   "This will lead to problems in your simulaion. See table below for hilslope IDs and segmented patch counts.\n",
+          #   "Regenerate hillslopes with a higher threshold for accumulated upslope area to correct this.\n"
+          # )
+          # print(segmented_df)
+          stop(paste0("Dissconnected patches found in hillslope ",i,". Check input maps and ensure all parts of each hillslope are contiguous.\n
+                      List of dissconnected patches: ",disconnected_patches,"\n"))
           #error("")
 
         }

@@ -174,7 +174,7 @@ create_flownet = function(flownet_name,
   }
 
   # ------------------------------ Make flownet list ------------------------------
-  cat("Building flowtable")
+  cat("\nBuilding flowtable\n")
   CF1 = make_flow_list(
     raw_patch_data = raw_patch_data,
     raw_patch_elevation_data = raw_patch_elevation_data,

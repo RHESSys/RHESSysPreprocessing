@@ -23,7 +23,7 @@ RHESSysPreprocess(
   fire_grid_out = FALSE,
   parallel = TRUE,
   make_stream = 4,
-  skip_hillslope_check = FALSE,
+  skip_hillslope_check = TRUE,
   convert_aspect = TRUE,
   wrapper = TRUE
 )
