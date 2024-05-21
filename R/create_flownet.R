@@ -145,11 +145,13 @@ create_flownet = function(flownet_name,
           }
         }
 
-        level_names = unname(c(map_info[map_info[, 1] == "basin", 2],
-                               map_info[map_info[, 1] == "hillslope", 2],
-                               map_info[map_info[, 1] == "zone", 2],
-                               map_info[map_info[, 1] == "patch", 2],
-                               map_info[map_info[, 1] == "strata", 2]))
+        # level_names = unname(c(map_info[map_info[, 1] == "basin", 2],
+        #                        map_info[map_info[, 1] == "hillslope", 2],
+        #                        map_info[map_info[, 1] == "zone", 2],
+        #                        map_info[map_info[, 1] == "patch", 2],
+        #                        map_info[map_info[, 1] == "strata", 2]))
+        level_names = unname(c(map_info[map_info[, 1] == "zone", 2],
+                               map_info[map_info[, 1] == "patch", 2]))
         level_names = unique(gsub(".tiff|.tif|.asc","",level_names))
 
         asp_maps = aggregate(map_df[[cfmaps[cfmaps[,1] == "asp_rule",2]]], by = map_df[level_names], FUN = mode_fun, simplify = T)
