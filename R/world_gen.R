@@ -435,7 +435,8 @@ world_gen = function(template,
               asp_strata_ct = length(rulevars[[ruleid]]$strata_level_vars[[asp]][1,]) - 1
               strata_ct = asp_strata_ct
 
-              writeChar(paste("\t\t\t\t",strata_ct,"\t\t\t","num_stratum\n",sep = ""),con = wcon,eos = NULL)
+              # writeChar(paste("\t\t\t\t",strata_ct,"\t\t\t","num_stratum\n",sep = ""),con = wcon,eos = NULL)
+              writeChar(paste("\t\t\t\t",strata_ct,"\t\t\t","num_canopy_strata\n",sep = ""),con = wcon,eos = NULL)
 
               # -------------------- MSR Canopy Strata (for non-spatial patches) --------------------
               for (s in 1:strata_ct) {
@@ -494,7 +495,8 @@ world_gen = function(template,
               varname = template_clean[[i]][1]
               writeChar(paste("\t\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
             }
-            writeChar(paste("\t\t\t\t",length(stratum),"\t\t\t","num_stratum\n",sep = ""),con = wcon,eos = NULL)
+            # writeChar(paste("\t\t\t\t",length(stratum),"\t\t\t","num_stratum\n",sep = ""),con = wcon,eos = NULL)
+            writeChar(paste("\t\t\t\t",length(stratum),"\t\t\t","num_canopy_strata\n",sep = ""),con = wcon,eos = NULL)
 
             # ----- Canopy Strata -----
             for (s in stratum) {

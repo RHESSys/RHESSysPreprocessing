@@ -31,17 +31,29 @@ read_world = function(worldfile, hill_col = F, zone_col = F, patch_col = F) {
 
   if (hill_col) {
     index_hill = which(world$vars == "hillslope_ID")
-    index_hill_max = c(index_hill[2:length(index_hill)] - 1, length(world$vars))
+    if (length(index_hill) > 1) {
+      index_hill_max = c(index_hill[2:length(index_hill)] - 1, length(world$vars))
+    } else {
+      index_hill_max = length(world$vars)
+    }
     world$hillslope_ID = c(rep(NA, index_hill[1]-1) ,unname(unlist(mapply(rep, world$values[index_hill], (index_hill_max - index_hill) + 1 ))))
   }
   if (zone_col) {
     index_zone = which(world$vars == "zone_ID")
-    index_zone_max = c(index_zone[2:length(index_zone)] - 1, length(world$vars))
+    if (length(index_zone) > 1) {
+      index_zone_max = c(index_zone[2:length(index_zone)] - 1, length(world$vars))
+    } else {
+      index_zone_max = length(world$vars)
+    }
     world$zone_ID = c(rep(NA, index_zone[1]-1) ,unname(unlist(mapply(rep, world$values[index_zone], (index_zone_max - index_zone) + 1 ))))
   }
   if (patch_col) {
     index_patch = which(world$vars == "patch_ID")
-    index_patch_max = c(index_patch[2:length(index_patch)] - 1, length(world$vars))
+    if (length(index_patch) > 1) {
+      index_patch_max = c(index_patch[2:length(index_patch)] - 1, length(world$vars))
+    } else {
+      index_patch_max = length(world$vars)
+    }
     world$patch_ID = c(rep(NA, index_patch[1]-1) ,unname(unlist(mapply(rep, world$values[index_patch], (index_patch_max - index_patch) + 1 ))))
   }
 
