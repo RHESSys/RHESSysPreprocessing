@@ -46,6 +46,7 @@ read_world = function(worldfile, hill_col = F, zone_col = F, patch_col = F) {
       index_zone_max = length(world$vars)
     }
     world$zone_ID = c(rep(NA, index_zone[1]-1) ,unname(unlist(mapply(rep, world$values[index_zone], (index_zone_max - index_zone) + 1 ))))
+    world$zone_ID[world$level %in% c("basin", "hillslope")] = NA
   }
   if (patch_col) {
     index_patch = which(world$vars == "patch_ID")
@@ -55,6 +56,7 @@ read_world = function(worldfile, hill_col = F, zone_col = F, patch_col = F) {
       index_patch_max = length(world$vars)
     }
     world$patch_ID = c(rep(NA, index_patch[1]-1) ,unname(unlist(mapply(rep, world$values[index_patch], (index_patch_max - index_patch) + 1 ))))
+    world$patch_ID[world$level %in% c("basin", "hillslope","zone")] = NA
   }
 
   # get unique ID - useful for queries/parsing later
