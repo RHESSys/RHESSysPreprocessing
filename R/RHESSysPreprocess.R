@@ -176,7 +176,7 @@ RHESSysPreprocess = function(template,
 
   if (fire_grid_out) {
     cat("Writing fire grid files")
-    write_fire_grids(name = name, template = template, map_dir = map_dir, seq_patch_IDs = seq_patch_IDs)
+    write_fire_grids(name = basename, template = template, map_dir = map_dir, seq_patch_IDs = seq_patch_IDs)
   }
 
 

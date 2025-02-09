@@ -47,28 +47,30 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   file_types = c("dem", "hillslope", "zone", "patch")
   files_out = file.path(map_dir, file_types)
 
-  stop("function broken -- need to replcae sp function write.asciigrid with terra or sf version. line 52 in write_fire_grids.R")
-
-  # write_rast = function(X) {
-  #   write.asciigrid(
-  #     x = maps_in[files_in[X]],
-  #     fname = files_out[X]
-  #   )
-  # }
+  write_rast = function(X) {
+    terra::writeRaster(
+      x = maps_in[files_in[X]],
+      filename = files_out[X],
+      NAflag=-9999,
+      filetype = "AAIGrid",
+      overwrite = TRUE
+    )
+  }
   shh = lapply(seq_along(files_out), write_rast)
 
   linesin = lapply(files_out, readLines)
   shhh = file.remove(files_out)
+  shhhh = file.remove(paste0(files_out, ".prj"))
   heads = lapply(linesin, "[", c(1:6))
   linesout = lapply(linesin, function(x) {
     x[7:length(x)]
   })
   write_files = file.path(map_dir, paste0(name, ".", file_types))
-  shhhh = mapply(writeLines, linesout, write_files)
+  shhhhh = mapply(writeLines, linesout, write_files)
   cat(
     "Wrote fire grid files to map dir:",
     map_dir,
-    "with levels appended as extensions (.dem, .hillslope, .zone, .patch)"
+    "with levels appended as extensions (.dem, .hillslope, .zone, .patch)\n"
   )
 
   # write header(s) info
@@ -77,7 +79,7 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   cat(
     "Wrote header info to:",
     file.path(map_dir, "grid_info.txt"),
-    "duplicate entries indicate varying header info"
+    "duplicate entries indicate varying header info\n"
   )
 
 }
