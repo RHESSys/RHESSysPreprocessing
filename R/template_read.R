@@ -38,19 +38,32 @@ template_read = function(template){
   for (i in var_index) {
     if (template_clean[[i]][2] != "char" && suppressWarnings(all(is.na(as.numeric(template_clean[[i]][3]))))  & length(template_clean[[i]]) != 2) {
       maps_all = c(maps_all, template_clean[[i]][3])
-      maps_index = c(maps_index, i)}
+      maps_index = c(maps_index, i)
+    }
     if (i > level_index[6] & suppressWarnings(all(is.na(as.numeric( template_clean[[i]][4]))))  & length(template_clean[[i]]) == 4) {
       maps_all = c(maps_all, template_clean[[i]][4])
-      maps_index = c(maps_index, i)}
+      maps_index = c(maps_index, i)
+    }
     if (length(template_clean[[i]]) == 5 ) { # this should just be for horizons
       maps_all = c(maps_all, template_clean[[i]][5])
-      maps_index = c(maps_index, i)}}
-
+      maps_index = c(maps_index, i)
+    }
+  }
+  
   maps_index = maps_index[!is.na(maps_index)] # index of rows w/ maps
   map_names = sapply(template_clean[maps_index], function(x) x[1])
   if (is.list(map_names)) {
     map_names = unlist(map_names)
   }
+
+  # IF STRATA HAS A MAP INSTEAD OF A NUMBER, READ IT TO USE TO DYNAMICALLY SET STRATA NUM
+  s_ind = which(var_names == "_canopy_strata")
+  if (suppressWarnings(all(is.na(as.numeric(template_clean[[s_ind]][3]))))) {
+    maps_all = c(maps_all, template_clean[[s_ind]][3])
+    maps_index = c(maps_index, s_ind)
+    map_names = c(map_names, "strata_count")
+  }
+
   map_info = cbind(c("world","basin","hillslope","zone","patch","strata", map_names),c(unlist(level_maps),maps_all[!is.na(maps_all)]))
   colnames(map_info) = c("MapName","Map")
   #map_info = unique(map_info)

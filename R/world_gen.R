@@ -80,43 +80,41 @@ world_gen = function(template,
   cellarea = terra::res(read_maps)[1] * terra::res(read_maps)[2] # get cell area - need for area operator
   cellarea = rep(cellarea, length(map_df[,1]))
 
-  # TODO  - delete when confident about alternative format
-  # if (class(readmap)[1] == "SpatialGridDataFrame") {
-  #   # process map data
-  #   if (length(read_maps@data[,1]) == 1) {
-  #     map_df = as.data.frame(read_maps@data) # works for 1 patch world
-  #   } else {
-  #     map_df = as.data.frame(read_maps) #make data frame for ease of use
-  #   }
-  #
-  #   cell_len = read_maps@grid@cellsize[1] # cell length for output
-  #   cellarea = read_maps@grid@cellsize[1] * read_maps@grid@cellsize[2] # get cell area - need for area operator
-  #   cellarea = rep(cellarea, length(map_df[,1]))
-  #   rm(read_maps) # read_maps may be very large if maps are large
-  # }
-
-  # check the maps are there
-  # if (any(!map_info[,"Map"] %in% names(map_df))) {
-  #   stop("Missing map")
-  # }
-
   # names
-  w_map = map_info[map_info[,1] == "world",2]
-  b_map = map_info[map_info[,1] == "basin",2]
+  w_map = map_info[map_info[, 1] == "world",2]
+  b_map = map_info[map_info[, 1] == "basin",2]
   h_map = map_info[map_info[, 1] == "hillslope", 2]
   z_map = map_info[map_info[, 1] == "zone", 2]
   p_map = map_info[map_info[, 1] == "patch", 2]
   s_map = map_info[map_info[, 1] == "strata", 2]
   levelmaps = unname(c(w_map,b_map,h_map,z_map,p_map,s_map))
 
-  # sort map df first so everything is subsequently in order
-  map_df = map_df[order(map_df[,h_map], map_df[,z_map], map_df[,p_map], map_df[,s_map], decreasing = F),]
-  rownames(map_df) = NULL
+  # Adding strata count (optionally) to level if its a map not a number, can only be a map of values==1|2
+  stmp = template_clean[[level_index[6]]][3]
+  if (suppressWarnings(all(is.na(as.numeric(stmp))))) {
+    strata_ct_map = T
+    s_ct_map = map_info[map_info[, 1] == "strata_count", 2]
+    print(paste0("Strata count set by map: ",s_ct_map,"\n"), quote = FALSE)
+    print("*** This is a new feature, may have errors. If so, use constant value (1 or 2) to set strata number.\n", quote = FALSE) 
+    levelmaps = c(levelmaps, unname(s_ct_map))
+    # sort map df first so everything is subsequently in order
+    map_df = map_df[order(map_df[,h_map], map_df[,z_map], map_df[,p_map], map_df[,s_map], map_df[,s_ct_map], decreasing = F),]
+    rownames(map_df) = NULL
 
-  # structure to iterate through spatial levels ---- matrix with unique ID's for each unit at each level
-  levels = map_df[levelmaps]
-  colnames(levels) = c("w", "b", "h", "z", "p", "s")
-  # levels = levels[order(levels$h, levels$z, levels$p, levels$s, decreasing = F),] # always order now, by hill, zone, patch, strata, in that order
+    # structure to iterate through spatial levels ---- matrix with unique ID's for each unit at each level
+    levels = map_df[levelmaps]
+    colnames(levels) = c("w", "b", "h", "z", "p", "s","s_ct")
+    
+  } else {
+    strata_ct_map = F
+    # sort map df first so everything is subsequently in order
+    map_df = map_df[order(map_df[,h_map], map_df[,z_map], map_df[,p_map], map_df[,s_map], decreasing = F),]
+    rownames(map_df) = NULL
+
+    # structure to iterate through spatial levels ---- matrix with unique ID's for each unit at each level
+    levels = map_df[levelmaps]
+    colnames(levels) = c("w", "b", "h", "z", "p", "s")
+  }
 
   # mode for aggregating by mode
   mode_fun = function(x) {
@@ -212,7 +210,16 @@ world_gen = function(template,
       level_agg = as.list(data.frame(levels[,i > level_index]))
     }
     if (i > level_index[6]) {
-      strata = 1:template_clean[[level_index[6]]][3] # for stratum level of template
+      # adding option for using variable strata nums - this is pretty fragile tho so idk
+      stmp = template_clean[[level_index[6]]][3]
+      if (suppressWarnings(all(is.na(as.numeric(stmp))))) {
+        maptmp = as.vector(t(map_df[stmp]))
+        # statevars[[i]][[s]] = aggregate(maptmp, by = level_agg, FUN = mode_fun)
+        strata = 1:max(unique(maptmp))
+      } else {
+        strata = 1:stmp # 1:num strata
+      }
+      # strata = 1:template_clean[[level_index[6]]][3] # for stratum level of template
     } else{
       strata = 1
     }
@@ -328,9 +335,10 @@ world_gen = function(template,
   #
   # }
 
-
   print("Writing worldfile",quote = FALSE)
-  stratum = 1:template_clean[[level_index[6]]][3] # count of stratum
+  if (!strata_ct_map) {
+    stratum = 1:template_clean[[level_index[6]]][3] # count of stratum - ONLY IF USING CONSTATNT NUMNER
+  }
 
   # -------------------- Progress Bar --------------------
   # Iterates at hillslope level, shouldnt slow code too much
@@ -481,7 +489,7 @@ world_gen = function(template,
           # ---------- Standard Patches + Stratum ----------
         } else {
 
-          patches = unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b, 5])
+          patches = unique(levels[levels[,4] == z & levels[,3] == h & levels[,2] == b, "p"])
           writeChar(paste("\t\t\t",length(patches),"\t\t\t","num_patches\n",sep = ""),con = wcon,eos = NULL)
 
           # ----- Patches -----
@@ -495,6 +503,11 @@ world_gen = function(template,
               varname = template_clean[[i]][1]
               writeChar(paste("\t\t\t\t",format(var),"\t\t\t",varname,"\n",sep = ""),con = wcon,eos = NULL)
             }
+
+            if (strata_ct_map) {
+              stratum = 1:unique(levels[levels[,"p"] == p & levels[,"z"] == z & levels[,"h"] == h & levels[,"b"] == b, "s_ct"])
+            }
+
             # writeChar(paste("\t\t\t\t",length(stratum),"\t\t\t","num_stratum\n",sep = ""),con = wcon,eos = NULL)
             writeChar(paste("\t\t\t\t",length(stratum),"\t\t\t","num_canopy_strata\n",sep = ""),con = wcon,eos = NULL)
 
