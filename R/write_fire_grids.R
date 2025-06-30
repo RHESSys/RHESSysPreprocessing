@@ -47,7 +47,7 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   file_types = c("dem", "hillslope", "zone", "patch")
   files_out = file.path(map_dir, file_types)
 
-  stop("function broken -- need to replcae sp function write.asciigrid with terra or sf version. line 52 in write_fire_grids.R")
+  # stop("function broken -- need to replcae sp function write.asciigrid with terra or sf version. line 52 in write_fire_grids.R")
 
   # write_rast = function(X) {
   #   write.asciigrid(
@@ -55,6 +55,27 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   #     fname = files_out[X]
   #   )
   # }
+  # tmp=maps_in[[files_in[X]]]
+  # class(tmp)
+  # r <- terra::rast(maps_in[[files_in[X]]])  # if maps_in contains matrices, works if metadata exists
+
+
+  # terra::writeRaster(
+  #   x = maps_in[[files_in[X]]],
+  #   filename = "test.asc",
+  #   # filetype = "XYZ",
+  #   overwrite = TRUE)
+  maps_in[[files_in[1]]] = round(maps_in[[files_in[1]]])
+
+
+  write_rast = function(X) {
+    terra::writeRaster(
+    x = maps_in[[files_in[X]]],
+    filename = files_out[X],
+    filetype = "AAIGrid",
+    overwrite = TRUE,
+    NAflag = -9999)
+  }
   shh = lapply(seq_along(files_out), write_rast)
 
   linesin = lapply(files_out, readLines)

@@ -3,7 +3,6 @@
 #' Generates world files for use in RHESSys based on input template and maps.
 #' @param worldfile Name and path of worldfile to be created.
 #' @inheritParams RHESSysPreprocess
-#' @seealso \code{\link{raster}}
 #' @author Will Burke
 #' @importFrom stats aggregate
 #' @export

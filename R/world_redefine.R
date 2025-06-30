@@ -15,7 +15,6 @@
 #' Example parameters are included in an example script included in this package. See initGRASS help
 #' for more info on parameters.
 #' @param overwrite Overwrite existing redefine worldfile. FALSE is default and prompts a menu if worldfile already exists.
-#' @seealso \code{\link{readRAST}}, \code{\link{raster}}
 #' @author Will Burke
 #' @export
 

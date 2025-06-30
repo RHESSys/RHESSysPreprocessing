@@ -48,9 +48,6 @@ format needed for RHESSys (CW NORTH==0). Defaults to TRUE.}
 \description{
 Generates world files for use in RHESSys based on input template and maps.
 }
-\seealso{
-\code{\link{raster}}
-}
 \author{
 Will Burke
 }

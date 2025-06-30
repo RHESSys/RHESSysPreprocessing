@@ -28,9 +28,6 @@ Generates redefine worldfiles for use in RHESSys specifically to modify exisitng
 replacing values or multipliers.
 Currently includes functionality for GRASS GIS (depreciated) and raster data, and works on both unix and windows. 3/4/19.
 }
-\seealso{
-\code{\link{readRAST}}, \code{\link{raster}}
-}
 \author{
 Will Burke
 }
