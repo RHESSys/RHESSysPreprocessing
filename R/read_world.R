@@ -22,10 +22,23 @@ read_world = function(worldfile, hill_col = F, zone_col = F, patch_col = F) {
   names(world) = c("values","vars")
 
   # ---------- Find Levels----------
+  # check for ID vars first
+  idvars = c("world_ID","basin_ID","hillslope_ID","zone_ID","patch_ID","canopy_strata_ID")
+  if (any(!idvars %in% world$vars)) {
+    missingid = idvars[!idvars %in% world$vars]
+    stop("Missing or incorrect ID vars in the world file:",missingid)
+  }
   index_all = which(world$vars == "world_ID" | world$vars == "basin_ID" | world$vars == "hillslope_ID" |
                       world$vars == "zone_ID" | world$vars == "patch_ID" | world$vars == "canopy_strata_ID")
   index_names = gsub("_ID", "", x = world$vars[index_all])
   index_max = c(index_all[2:length(index_all)] - 1, length(world$vars))
+  testing = F
+  if (testing) {
+    tmp = unname(unlist(mapply(rep, index_names, (index_max - index_all) + 1 )))
+    length(tmp)
+    head(tmp,30)
+    # COULDN'T FIND THE FUCKING ID CAUSE THEY DIDN'T CAPITALIZE
+  }
   world$level = unname(unlist(mapply(rep, index_names, (index_max - index_all) + 1 )))
   world$ID = unname(unlist(mapply(rep, world$values[index_all], (index_max - index_all) + 1 )))
 
