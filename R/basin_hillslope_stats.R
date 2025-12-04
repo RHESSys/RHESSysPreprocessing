@@ -22,7 +22,7 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
   veg_areas$veg_names = veg_areas$veg_parm_ID
 
   if (LPC_vegnames) {
-    veg_areas$veg_names = case_match(veg_areas$veg_names, "1" ~ "tree", "5" ~ "shrub","3" ~ "herb","4" ~ "bare")
+    veg_areas$veg_names = dplyr::case_match(veg_areas$veg_names, "1" ~ "tree", "5" ~ "shrub","3" ~ "herb","4" ~ "bare")
   } else {
     veg_areas$veg_names = paste0("vegID_",veg_areas$veg_names)
   }
@@ -42,7 +42,7 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
   hill_veg_areas$veg_names = hill_veg_areas$veg_parm_ID
 
   if (LPC_vegnames) {
-    hill_veg_areas$veg_names = case_match(hill_veg_areas$veg_names, "1" ~ "tree", "5" ~ "shrub","3" ~ "herb","4" ~ "bare")
+    hill_veg_areas$veg_names = dplyr::case_match(hill_veg_areas$veg_names, "1" ~ "tree", "5" ~ "shrub","3" ~ "herb","4" ~ "bare")
   } else {
     hill_veg_areas$veg_names = paste0("vegID_",hill_veg_areas$veg_names)
   }
@@ -80,7 +80,7 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
   names(hillslope_elevation)[2] = "elevation"
 
   hillslope_df = merge(hillslope_slope, hillslope_elevation)
-  hill_veg_wider = pivot_wider(hill_veg_areas[,c("hillslope_ID", "veg_names","percent_area")], names_from = "veg_names", values_from = "percent_area")
+  hill_veg_wider = tidyr::pivot_wider(hill_veg_areas[,c("hillslope_ID", "veg_names","percent_area")], names_from = "veg_names", values_from = "percent_area")
   hillslope_df = merge(hillslope_df, hill_veg_wider)
 
   basin_df = data.frame(
@@ -89,7 +89,7 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
     num_hillslopes = nrow(hillslope_df), mean_hill_area_sq_km = mean(hillslope_df$hillslope_area)/1000000,
     num_zones = length(unique(world$zone_ID)), mean_zone_area = mean(as.numeric(world[world$vars == "area" & world$level == "zone","values"])),
     num_patches = length(unique(world$patch_ID)), mean_patch_area = mean(as.numeric(world[world$vars == "area" & world$level == "patch","values"])),
-    pivot_wider(veg_areas[,c("veg_names","percent_area")], names_from = "veg_names", values_from = "percent_area")
+    tidyr::pivot_wider(veg_areas[,c("veg_names","percent_area")], names_from = "veg_names", values_from = "percent_area")
   )
 
   basin_df_tbl = basin_df
@@ -109,8 +109,8 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
     dgts = 2
   }
 
-  kbl_basin = kable(basin_df_tbl, caption = "Basin stats", digits = dgts)
-  kbl_hill = kable(hillslope_df_tbl, caption = "Hillslope stats", digits = dgts)
+  kbl_basin = knitr::kable(basin_df_tbl, caption = "Basin stats", digits = dgts)
+  kbl_hill = knitr::kable(hillslope_df_tbl, caption = "Hillslope stats", digits = dgts)
   print(kbl_basin)
   print(kbl_hill)
 
