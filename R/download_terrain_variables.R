@@ -4,10 +4,8 @@
 #' National Land Cover Database (NLCD) raster for an area of interest, reproject
 #' the raster, and adjust spatial resolution.
 #'
-#' @param bbox A spatraster that defines the Area of Interest. Coordinates
-#'   should be in long/lat. Needed functionality: a bbox vector in the form of
-#'   c(........).
-#' @param proj_epsg The UTM EPSG for reprojecting the terrain raster.
+#' @param bbox A sf or spatraster object that defines the Area of Interest. Coordinates
+#'   should be in long/lat.
 #' @param data_source Source of data. Current option is "FedData".
 #' @param variable Name of the desired variable. Current options include "dem",
 #'   and "nlcd".
@@ -17,6 +15,7 @@
 #'   dataset.
 #' @param nlcd_year Year of nlcd data. Acceptable values are 2019 (default),
 #'   2016, 2011, 2008, 2006, 2004, and 2001.
+#' @param proj_epsg The UTM EPSG for reprojecting the terrain raster.
 #' @param res_final Desired final resolution in meters.
 #' @param res_final_example An spatraster with desired resolution for the downloaded
 #'   data to be resampled to. In many cases, this will be same raster as bbox.
@@ -29,20 +28,25 @@
 #' @export
 
 download_terrain_variables <- function(bbox,
-                                       proj_epsg,
                                        data_source,
                                        variable,
                                        label,
                                        res_ned = "1",
                                        nlcd_year = NULL,
+                                       proj_epsg,
                                        res_final = NULL,
                                        res_final_example = NULL,
                                        output_file){
 
   # -----------------
+  # Checks
+
+  # Add input checks here
+
+  # -----------------
   # Process bbox
 
-  # Todo: Currently only accepts a raster file
+  # Todo: Currently only accepts a sf or spatraster object. Add functionality to accept a bbox vector in the form of c(........).
 
   # -----------------
   # Download data
@@ -98,7 +102,7 @@ download_terrain_variables <- function(bbox,
   # -----------------
   # Write output
 
-  setGDALconfig("GDAL_PAM_ENABLED", "FALSE")     # Prevent xml files from being generated
+  terra::setGDALconfig("GDAL_PAM_ENABLED", "FALSE")     # Prevent xml files from being generated
   terra::writeRaster(terrain_raster_res, filename = output_file, overwrite=TRUE)
 
   return(terrain_raster_res)

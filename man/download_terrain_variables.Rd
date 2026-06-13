@@ -6,23 +6,20 @@
 \usage{
 download_terrain_variables(
   bbox,
-  proj_epsg,
   data_source,
   variable,
   label,
   res_ned = "1",
   nlcd_year = NULL,
+  proj_epsg,
   res_final = NULL,
   res_final_example = NULL,
   output_file
 )
 }
 \arguments{
-\item{bbox}{A spatraster that defines the Area of Interest. Coordinates
-should be in long/lat. Needed functionality: a bbox vector in the form of
-c(........).}
-
-\item{proj_epsg}{The UTM EPSG for reprojecting the terrain raster.}
+\item{bbox}{A sf or spatraster object that defines the Area of Interest. Coordinates
+should be in long/lat.}
 
 \item{data_source}{Source of data. Current option is "FedData".}
 
@@ -37,6 +34,8 @@ dataset.}
 
 \item{nlcd_year}{Year of nlcd data. Acceptable values are 2019 (default),
 2016, 2011, 2008, 2006, 2004, and 2001.}
+
+\item{proj_epsg}{The UTM EPSG for reprojecting the terrain raster.}
 
 \item{res_final}{Desired final resolution in meters.}
 

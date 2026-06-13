@@ -1,0 +1,245 @@
+---
+title: "Process spatial inputs"
+author: "Ryan Bart"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Process spatial inputs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+You will need to create a directory in which all generated rasters will be stored. This will also be the root directory for this vignette.
+
+```{r setup, include = FALSE}
+
+knitr::opts_knit$set(
+  #root.dir = "/path/to/project"
+  root.dir = "/Users/ryanbart/work_dir/projects/2_other/r/rhessys_whitebox_preprocessing_demo2"
+)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette provides an example of how spatial inputs for RHESSys, which are used for generating the worldfile and flowtable, can be processed using WhiteBox. Whitebox is a set of open-source geospatial processing tools (https://www.whiteboxgeo.com/) that can be called from R (https://github.com/opengeos/whiteboxR). In the past, spatial input processing was conducted using GRASS (https://github.com/RHESSys/RHESSys/wiki/GRASS-tutorial-for-creating-necessary-RHESSys-maps). These new procedures allow all RHESSys preprocessing and operation to be conducted using R.  
+  
+There are five key functions in RHESSysPreprocessing associated with developing spatial inputs:  
+- download_terrain_variables (optional)  
+- make_landscape_rasters  
+- make_landscape_rasters_patch
+- make_basin_raster  
+- mask_landscape_rasters_by_basin  
+
+## Setup
+
+This vignette requires the following packages that can be obtained from CRAN.
+
+```{r}
+library(dplyr)
+library(sf)
+library(RHESSysPreprocessing)
+library(terra)
+library(whitebox)
+```
+
+If you haven't already done so, you will need to get download whitebox binary to your computer. Whitebox is written in the Rust programming language. The R package `whitebox` that you downloaded through R is not whitebox itself, but rather provides a linkage to the whitebox binary. The binary can be downloaded directly from the Whitebox website or via the following R function.
+
+```{r}
+whitebox::install_whitebox()
+```
+
+Now check if the whitebox binary can be found by R. Note that I've seen an error occur where the following function is TRUE but due to an outdated whitebox binary, the subsequent functions did not work. If you have issues, double check that you have the latest whitebox version. 
+
+```{r}
+whitebox::check_whitebox_binary()
+```
+
+## Inputs
+
+To run this vignette, you will need to know the coordinates of a watershed gauge, the coordinates of the bounding box (or landscape) surrounding your watershed, and the EPSG of the UTM zone that contains your watershed.
+
+In this example, we will use the USGS watershed gauge coordinates for Sagehen Creek in the Sierra Nevada. These can be found at https://waterdata.usgs.gov/monitoring-location/USGS-10343500/. The bounding coordinates of a watershed are currently obtained manually in this workflow. This is something that may be able to be automated in the future. There are several web-based viewers in which to visualize the watershed, including https://www.epa.gov/waterdata/waters-geoviewer and https://apps.nationalmap.gov/downloader/#/. The goal is to define a bounding box that completely encompasses the entire watershed. Having a buffer around the watershed is fine, though be aware that the bigger the bounding box, the more raster processing will be needed.
+
+The following box shows the values derived for Sagehen.
+
+```{r}
+# Gauge coordinates (longitude, latitude)
+gauge_coord <- c(-120.23795469886433, 39.431545766138186)
+
+# Landscape boundaries (in longitude, latitude) - visually estimated
+landscape_coord <- c(xmin = -120.33, ymin = 39.39, xmax = -120.21, ymax = 39.48)
+
+# UTM EPSG
+utm_epsg <- 32610
+```
+
+The coordinates are now converted into sf objects, which are needed for downloading data.
+
+```{r}
+# Create an sf object for gauge in longlat,
+gauge_longlat <- sf::st_sf(geom = sf::st_sfc(sf::st_point(gauge_coord)), crs = 4326)
+# Create an sf object for gauge in utm.
+gauge_utm <- sf::st_transform(gauge_longlat, crs = utm_epsg)
+# Create an sf object for landscape boundary in longlat
+bbox_landscape <- sf::st_sf(sf::st_as_sfc(sf::st_bbox(landscape_coord, crs = 4326)))
+```
+
+## Download your terrain variables
+
+The function download_terrain_variables uses the R package FedData to download a DEM from the National Elevation Dataset (NED), reproject the raster, and adjust the spatial resolution. This DEM will then be used as the basis for subsequent analyses.
+
+Note that if you already have a DEM encompassing your watershed, the download_terrain_variables step is not needed. You can jump directly to next section, Make the Spatial Rasters.
+
+```{r}
+dem <- RHESSysPreprocessing::download_terrain_variables(bbox = bbox_landscape,
+                                                        data_source = "FedData",
+                                                        variable = "dem",
+                                                        label = "sagehen",
+                                                        res_ned = "1",
+                                                        proj_epsg = utm_epsg,
+                                                        res_final = 90,
+                                                        res_final_example = NULL,
+                                                        output_file = "dem_landscape.tif")
+plot(dem)
+```
+
+## Make the spatial landscape rasters
+
+Many of the raster inputs needed for RHESSys can be generated directly from a DEM. The `make_landscape_rasters` function creates these rasters, which include:
+- Aspect (used in worldfile)
+- D8_Flow Accumulation (used as intermediary to make other rasters)
+- D8 Pointer (used as intermediary to make other rasters)
+- DEM Breach (used as intermediary to make other rasters)
+- Eastern Horizon (used in worldfile)
+- Slope (used in worldfile)
+- Streams (used in worldfile)
+- Subbasin (used in worldfile)
+- Western Horizon (used in worldfile)
+
+
+```{r}
+RHESSysPreprocessing::make_landscape_rasters(dem = "dem_landscape.tif",
+                                             directory = ".",
+                                             stream_threshold = 20)
+
+# Visual check
+slope <- terra::rast("slope_landscape.tif")
+plot(slope)
+```
+
+The patch raster is derived by a different function than the other spatial rasters, since the patch raster can take on many different forms.
+
+
+```{r}
+RHESSysPreprocessing::make_landscape_rasters_patch(directory = ".",
+                                                   patch_method = "simple")
+
+# Visual check
+patch <- terra::rast("patch_landscape.tif")
+plot(patch)
+```
+
+## Create your basin file
+
+For this step, you need to make sure that your gauge overlies the stream network in the correct location. Often, the gauge will be near, but not on the stream. These next steps show how to correct the gauge location.
+
+Create a plot to visually compare the stream network and the gauge location
+
+```{r}
+streams <- terra::rast("streams_landscape.tif")
+plot(streams)
+points(gauge_utm)
+```
+
+Make adjustments to gage location, if necessary. This section of the workflow needs to be improved, as the adjustments below need to be in long/lat units, but the previous plot was in utm units. A conversion will be necessary until a shiny tool is created for this step.
+
+```{r}
+
+# Manually adjust longitude and latitude if necessary (units are in long/lat)
+longitude_adj <- 0.0
+latitude_adj <- 0.0 
+
+gauge_coord_adj <- c(gauge_coord[1] + longitude_adj, gauge_coord[2] + latitude_adj)
+```
+
+The 'make_basin_raster' function will cut out a basin based on the designated outlet (or pour point in Whitebox parlance). The function includes the Jenson Snap Pour Points function under the hood, which will automatically move the outlet to the nearest stream segment. This tool can often be helpful but can produce large errors in delineating the basin when a outlet is close to a major stream junction. This is why a manual adjustment is still often necessary.
+
+```{r}
+RHESSysPreprocessing::make_basin_raster(directory = ".",
+                                        pour_point_file = NULL,
+                                        pour_point_longlat = gauge_coord_adj,
+                                        proj_epsg = utm_epsg,
+                                        streams = "streams_landscape.tif",
+                                        d8_pointer = "d8_pointer_landscape.tif",
+                                        snap_dist = 1000,
+                                        save_map = TRUE)
+
+# Visual check
+basin <- terra::rast("basin.tif")
+plot(basin)
+points(gauge_utm)
+```
+
+Optional: Create vector files (shapefile and kml) for basin
+
+``` {r}
+# Import raster
+basin <- terra::rast("basin.tif")
+
+# Convert to vector
+basin_v <- terra::as.polygons(basin , values = TRUE, extent=FALSE)
+
+# Export
+terra::writeVector(basin_v, "basin.shp", overwrite=TRUE)
+terra::writeVector(basin_v, "basin.kml", overwrite=TRUE)
+```
+
+## Mask landscape rasters by basin  
+
+Now that the basin file has been created, mask all the '_landscape' rasters to the basin using the 'mask_landscape_rasters_by_basin' function. This function works by masking all files in the directory that have the designated extension. The new files will only contain data within the boundaries of the basin, with all pixels outside the basin being NA.
+
+```{r}
+RHESSysPreprocessing::mask_landscape_rasters_by_basin(directory = ".",
+                                                      file_identifier = "_landscape.tif")
+
+# View an example of your output
+dem <- terra::rast("dem.tif")
+streams <- terra::rast("streams.tif")
+plot(dem)
+plot(streams, add = TRUE)
+points(gauge_utm)
+```
+
+In the directory, you should now have a set of landscape-scale and basin-scale files for each variable. The latter can be used to build the files needed by RHESSys to operate, like the worldfile and flowtable. These can be generated using the RHESSysProcessing::RHESSysPreprocess and is described further in the Run_RHESSysPreprocess vignette.
+
+## Bonus: Get landcover NLCD data
+
+In addition to being used to obtain DEM data, the 'download_terrain_variables' function also can be used to download NLCD landcover data. We hope to include additional functionality in the future. Here is an example for downloading NLCD data. Note that the ncld_year argument has replaced the res_ned argument previously used.
+
+Note: Due to changes in NLCD, this function is currently non-functional.
+
+```{r}
+nlcd <- RHESSysPreprocessing::download_terrain_variables(bbox = bbox_landscape,
+                                                         data_source = "FedData",
+                                                         variable = "nlcd",
+                                                         label = "sagehen",
+                                                         nlcd_year = 2019,
+                                                         proj_epsg = utm_epsg,
+                                                         res_final = NULL,
+                                                         res_final_example = dem,
+                                                         output_file = file.path("nlcd_landscape.tif"))
+
+plot(nlcd)
+```
+
+
+
+## Todo list
+- Add optional prefixes to raster output names
+- Merge code to main branch
+- Add function for modifying gauge location
+
+

@@ -3,8 +3,8 @@
 #' This function generates a basin raster by 1) adjusting a pour point (aka
 #' outlet) to the stream network, and 2) cutting out the corresponding basin.
 #'
-#' @param work_folder Path to folder containing inputs/outputs
-#' @param pour_point_file Filename&extension (if located in work_folder), or
+#' @param directory Path to directory containing raster inputs/outputs
+#' @param pour_point_file Filename&extension (if located in directory), or
 #'   path&filename&extension, of a shapefile containing a point designating the
 #'   basin outlet. Projection of shapefile should be same as `streams` and
 #'   `d8_pointer` This argument overrides `pour_point_longlat`.
@@ -12,13 +12,13 @@
 #'   point designating the basin outlet. The coordinate will be reprojected to
 #'   the `proj_epsg` projection and then a shapefile will be generated, which
 #'   will subsequently be used as a direct input into Whitebox function. The new
-#'   shapefile will be written to `work_folder`. This argument will be ignored
+#'   shapefile will be written to `directory`. This argument will be ignored
 #'   if `pour_point_file` is not NULL.
 #' @param proj_epsg EPSG of project that `pour_point_longlat` will be converted
 #'   to. Should be a UTM zone.
-#' @param streams Filename&extension (if located in work_folder), or
+#' @param streams Filename&extension (if located in directory), or
 #'   path&filename&extension, of the streams raster to be inputted.
-#' @param d8_pointer Filename&extension (if located in work_folder), or
+#' @param d8_pointer Filename&extension (if located in directory), or
 #'   path&filename&extension, of the D8 pointer raster to be inputted.
 #' @param snap_dist Maximum snap distance in map units (Meters for UTM).
 #' @param save_map Option to save a map showing pour point adjustment on stream
@@ -41,7 +41,7 @@
 #'
 #' @export
 
-make_basin_raster <- function(work_folder,
+make_basin_raster <- function(directory,
                               pour_point_file = NULL,
                               pour_point_longlat = NULL,
                               proj_epsg = NULL,
@@ -54,10 +54,10 @@ make_basin_raster <- function(work_folder,
   if (!is.null(pour_point_file)){
     # Check that pour_point_file exists
     if(!file.exists(pour_point_file)){
-      if(!file.exists(file.path(work_folder, pour_point_file))){
+      if(!file.exists(file.path(directory, pour_point_file))){
         stop("pour_point_file not found.")
       } else {
-        pour_point_file <- file.path(work_folder, pour_point_file)
+        pour_point_file <- file.path(directory, pour_point_file)
       }
     }
   } else {
@@ -69,7 +69,7 @@ make_basin_raster <- function(work_folder,
       # Change projection to UTM
       pour_point <- sf::st_transform(pour_point, crs = sf::st_crs(proj_epsg))
       # Save pour point so it can be imported to whitebox functions
-      pour_point_file <- file.path(work_folder, "pour_point.shp")
+      pour_point_file <- file.path(directory, "pour_point.shp")
       sf::st_write(pour_point, pour_point_file, delete_dsn = TRUE)
     } else {
       stop(noquote(paste("Please specify a pour_point")))
@@ -78,24 +78,24 @@ make_basin_raster <- function(work_folder,
 
   # Check that streams exists.
   if(!file.exists(streams)){
-    if(!file.exists(file.path(work_folder, streams))){
+    if(!file.exists(file.path(directory, streams))){
       stop("Streams not found.")
     } else {
-      streams <- file.path(work_folder, streams)
+      streams <- file.path(directory, streams)
     }
   }
 
   # Check that d8_pointer exists.
   if(!file.exists(d8_pointer)){
-    if(!file.exists(file.path(work_folder, d8_pointer))){
+    if(!file.exists(file.path(directory, d8_pointer))){
       stop("d8_pointer not found.")
     } else {
-      d8_pointer <- file.path(work_folder, d8_pointer)
+      d8_pointer <- file.path(directory, d8_pointer)
     }
   }
 
-  pour_point_snapped <- file.path(work_folder, "pour_point_snapped.shp")
-  basin <- file.path(work_folder, "basin.tif")
+  pour_point_snapped <- file.path(directory, "pour_point_snapped.shp")
+  basin <- file.path(directory, "basin.tif")
 
   # -----------------
 
@@ -123,7 +123,7 @@ make_basin_raster <- function(work_folder,
     # Import pour_point_snapped.shp
     pps_input <- sf::st_read(pour_point_snapped)
 
-    jpeg(file.path(work_folder, "pour_point_comparison.jpg"))
+    jpeg(file.path(directory, "pour_point_comparison.jpg"))
     terra::plot(streams_input)
     terra::plot(pp_input, add = TRUE, col = "blue", pch = 19, cex = 1.5)
     terra::plot(pps_input, add = TRUE, col = "yellow", pch = 20, cex = 1)

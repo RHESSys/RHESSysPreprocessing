@@ -5,7 +5,7 @@
 \title{Make a basin raster}
 \usage{
 make_basin_raster(
-  work_folder,
+  directory,
   pour_point_file = NULL,
   pour_point_longlat = NULL,
   proj_epsg = NULL,
@@ -16,9 +16,9 @@ make_basin_raster(
 )
 }
 \arguments{
-\item{work_folder}{Path to folder containing inputs/outputs}
+\item{directory}{Path to directory containing raster inputs/outputs}
 
-\item{pour_point_file}{Filename&extension (if located in work_folder), or
+\item{pour_point_file}{Filename&extension (if located in directory), or
 path&filename&extension, of a shapefile containing a point designating the
 basin outlet. Projection of shapefile should be same as `streams` and
 `d8_pointer` This argument overrides `pour_point_longlat`.}
@@ -27,16 +27,16 @@ basin outlet. Projection of shapefile should be same as `streams` and
 point designating the basin outlet. The coordinate will be reprojected to
 the `proj_epsg` projection and then a shapefile will be generated, which
 will subsequently be used as a direct input into Whitebox function. The new
-shapefile will be written to `work_folder`. This argument will be ignored
+shapefile will be written to `directory`. This argument will be ignored
 if `pour_point_file` is not NULL.}
 
 \item{proj_epsg}{EPSG of project that `pour_point_longlat` will be converted
 to. Should be a UTM zone.}
 
-\item{streams}{Filename&extension (if located in work_folder), or
+\item{streams}{Filename&extension (if located in directory), or
 path&filename&extension, of the streams raster to be inputted.}
 
-\item{d8_pointer}{Filename&extension (if located in work_folder), or
+\item{d8_pointer}{Filename&extension (if located in directory), or
 path&filename&extension, of the D8 pointer raster to be inputted.}
 
 \item{snap_dist}{Maximum snap distance in map units (Meters for UTM).}

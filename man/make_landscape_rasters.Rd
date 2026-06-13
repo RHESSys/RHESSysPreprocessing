@@ -4,32 +4,24 @@
 \alias{make_landscape_rasters}
 \title{Make landscape rasters for watershed processing}
 \usage{
-make_landscape_rasters(
-  dem,
-  work_folder,
-  stream_threshold,
-  patch_method = "simple"
-)
+make_landscape_rasters(dem, directory, stream_threshold)
 }
 \arguments{
-\item{dem}{Filename&extension (if located in work_folder), or
+\item{dem}{Filename&extension (if located in directory), or
 path&filename&extension, of the DEM to be inputted. DEM must be a file on
 hard drive, not an object within R. The function assumes that the DEM is
 already at the desired resolution, extent and projection. Projection should
 be in UTM, as some of the whitebox computations assume that pixel
 dimensions are in meters.}
 
-\item{work_folder}{Path to folder containing inputs/outputs}
+\item{directory}{Path to directory containing raster inputs/outputs}
 
 \item{stream_threshold}{Threshold of flow accumulation for designating a
 patch as stream.}
-
-\item{patch_method}{Options for generating patch raster. Options include
-'simple' (default).}
 }
 \description{
 Using a DEM input, this function generates aspect, slope, horizon (east and
-west), d8 pointer, d8 flow accumulation, stream network, subbasin, and patch
+west), d8 pointer, d8 flow accumulation, stream network, and subbasin
 rasters.
 }
 \section{Note}{
