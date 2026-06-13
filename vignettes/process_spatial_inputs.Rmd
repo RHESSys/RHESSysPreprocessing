@@ -9,13 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-You will need to create a directory in which all generated rasters will be stored. This will also be the root directory for this vignette.
-
 ```{r setup, include = FALSE}
 
 knitr::opts_knit$set(
-  #root.dir = "/path/to/project"
-  root.dir = "/Users/ryanbart/work_dir/projects/2_other/r/rhessys_whitebox_preprocessing_demo2"
+  root.dir = "set/path/to/root/directory"         # Change path to directory where all rasters will be stored.
 )
 
 knitr::opts_chunk$set(
@@ -222,17 +219,17 @@ In addition to being used to obtain DEM data, the 'download_terrain_variables' f
 Note: Due to changes in NLCD, this function is currently non-functional.
 
 ```{r}
-nlcd <- RHESSysPreprocessing::download_terrain_variables(bbox = bbox_landscape,
-                                                         data_source = "FedData",
-                                                         variable = "nlcd",
-                                                         label = "sagehen",
-                                                         nlcd_year = 2019,
-                                                         proj_epsg = utm_epsg,
-                                                         res_final = NULL,
-                                                         res_final_example = dem,
-                                                         output_file = file.path("nlcd_landscape.tif"))
-
-plot(nlcd)
+# nlcd <- RHESSysPreprocessing::download_terrain_variables(bbox = bbox_landscape,
+#                                                          data_source = "FedData",
+#                                                          variable = "nlcd",
+#                                                          label = "sagehen",
+#                                                          nlcd_year = 2019,
+#                                                          proj_epsg = utm_epsg,
+#                                                          res_final = NULL,
+#                                                          res_final_example = dem,
+#                                                          output_file = file.path("nlcd_landscape.tif"))
+# 
+# plot(nlcd)
 ```
 
 
