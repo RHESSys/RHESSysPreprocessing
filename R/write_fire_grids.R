@@ -9,10 +9,6 @@
 #' @author Will Burke
 #' @export
 
-# name = "BC_h2"
-# template = "Preprocessing/template/coupling_test.template"
-# map_dir = "Preprocessing/BC_spatial/hillID_2/"
-
 write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
 
   template_in = template_read(template)
@@ -29,15 +25,18 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
     output_patch_map = FALSE
   )
 
-  #maps_rast = methods::as(maps_in, "RasterStack")
-
-  # write.asciigrid needs even cell sizes and projections can lead to very slight differences
   if (length(unique(terra::res(maps_in))) != 1) {
-    terra::res(maps_in) = round(terra::res(maps_in), 5)
+    maps_new = maps_in
+    terra::res(maps_new) = round(terra::res(maps_new), 5)
     if (length(unique(terra::res(maps_in))) != 1) {
       warning("Cell sizes are not square - using mean of cell sizes so write.asciigrid will work")
-      terra::res(maps_in) = mean(terra::res(maps_in))
+      terra::res(maps_new) = mean(terra::res(maps_new))
     }
+    maps_new = resample(maps_in, maps_new, method = "near")
+    names(maps_new) = names(maps_in)
+    # maps_in = maps_new
+  } else {
+    maps_new = maps_in
   }
 
   files_in = unname(c(maps[maps[, 1] == "z", 2],
@@ -47,30 +46,9 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
   file_types = c("dem", "hillslope", "zone", "patch")
   files_out = file.path(map_dir, file_types)
 
-  # stop("function broken -- need to replcae sp function write.asciigrid with terra or sf version. line 52 in write_fire_grids.R")
-
-  # write_rast = function(X) {
-  #   write.asciigrid(
-  #     x = maps_in[files_in[X]],
-  #     fname = files_out[X]
-  #   )
-  # }
-  # tmp=maps_in[[files_in[X]]]
-  # class(tmp)
-  # r <- terra::rast(maps_in[[files_in[X]]])  # if maps_in contains matrices, works if metadata exists
-
-
-  # terra::writeRaster(
-  #   x = maps_in[[files_in[X]]],
-  #   filename = "test.asc",
-  #   # filetype = "XYZ",
-  #   overwrite = TRUE)
-  maps_in[[files_in[1]]] = round(maps_in[[files_in[1]]])
-
-
   write_rast = function(X) {
     terra::writeRaster(
-    x = maps_in[[files_in[X]]],
+    x = maps_new[[files_in[X]]],
     filename = files_out[X],
     filetype = "AAIGrid",
     overwrite = TRUE,

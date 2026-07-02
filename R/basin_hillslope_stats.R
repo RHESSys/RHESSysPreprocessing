@@ -6,7 +6,7 @@
 #' @param LPC_vegnames TRUE/FALSE Should the veg_parm_IDs of 1,5,3,4 be automatically renamed to tree, shrub, herb, and bare (other).
 #' @export
 
-basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
+basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = F) {
 
   cat("Reading in worldfile ...\n")
   world = read_world(worldfile = worldfile,hill_col = T, patch_col = T, zone_col = T)
@@ -22,6 +22,9 @@ basin_hillslope_stats = function(worldfile, outfile = NULL, LPC_vegnames = T) {
   veg_areas$veg_names = veg_areas$veg_parm_ID
 
   if (LPC_vegnames) {
+    if (any(! veg_areas$veg_names %in% c("1","3","4","5"))) {
+      warning("LPC_vegnames is TRUE but veg_parm_IDs other than 1,3,4,5 are present. Check results.")
+    }
     veg_areas$veg_names = dplyr::case_match(veg_areas$veg_names, "1" ~ "tree", "5" ~ "shrub","3" ~ "herb","4" ~ "bare")
   } else {
     veg_areas$veg_names = paste0("vegID_",veg_areas$veg_names)
