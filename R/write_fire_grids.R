@@ -32,7 +32,7 @@ write_fire_grids = function(name, template, map_dir, seq_patch_IDs = FALSE) {
       warning("Cell sizes are not square - using mean of cell sizes so write.asciigrid will work")
       terra::res(maps_new) = mean(terra::res(maps_new))
     }
-    maps_new = resample(maps_in, maps_new, method = "near")
+    maps_new = terra::resample(maps_in, maps_new, method = "near")
     names(maps_new) = names(maps_in)
     # maps_in = maps_new
   } else {
